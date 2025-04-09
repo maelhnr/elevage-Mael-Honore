@@ -1,6 +1,6 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .forms import ElevageForm
-from .models import Elevage
+from .models import Elevage, Individu
 
 def nouveau(request):
     if request.method == 'POST':
@@ -15,3 +15,11 @@ def nouveau(request):
 def liste(request):
     elevages = Elevage.objects.all().order_by('-date_creation')
     return render(request, 'elevage/liste.html', {'elevages': elevages})
+
+def elevage(request, elevage_id):
+    elevage = get_object_or_404(Elevage, id=elevage_id)
+    individus = Individu.objects.filter(elevage=elevage, etat='P')  # On affiche uniquement les vivants
+    return render(request, 'elevage/elevage.html', {
+        'elevage': elevage,
+        'individus': individus,
+    })
