@@ -9,4 +9,5 @@ class ElevageAdmin(admin.ModelAdmin):
     
 @admin.register(Individu)
 class IndividuAdmin(admin.ModelAdmin):
-    list_display = ('sexe', 'age', 'etat', 'elevage')
+    list_display = ('elevage', 'sexe', 'age', 'etat')
+    list_filter = ('elevage', 'sexe', 'etat')
