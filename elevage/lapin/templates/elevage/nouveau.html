@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Nouvel élevage</title>
+</head>
+<body>
+    <h1>Initialiser une nouvelle partie</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Démarrer la partie</button>
+    </form>
+</body>
+</html>
