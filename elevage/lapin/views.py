@@ -33,7 +33,9 @@ def elevage(request, elevage_id):
         nb_femelles = individus.filter(sexe='F').count()
 
         # Vérification des ordres
-        cout_total = nourriture_achetee * 0.002 + cages_achetees * 10  # Exemple : 2€/kg de nourriture, 10€/cage
+        prix_nourriture = 0.002
+        prix_cage = 10
+        cout_total = nourriture_achetee * prix_nourriture + cages_achetees * prix_cage  # Exemple : 2€/kg de nourriture, 10€/cage
         if vendus_m > nb_males or vendus_f > nb_femelles:
             form.add_error(None, "Vous ne pouvez pas vendre plus de lapins que vous n'en avez.")
         elif cout_total > elevage.argent:
@@ -49,7 +51,7 @@ def elevage(request, elevage_id):
             elevage.argent -= cout_total
 
             elevage.save()
-            return redirect('elevage', elevage_id=elevage.id)
+            return redirect('elevage_detail', elevage_id=elevage.id)
 
     context = {
         'elevage': elevage,
