@@ -1,0 +1,22 @@
+<h1>Détails de l'élevage de {{ elevage.nom_joueur }}</h1>
+
+<p>
+    Nourriture : {{ elevage.quantite_nourriture }}g<br>
+    Cages : {{ elevage.nombre_cages }}<br>
+    Argent : {{ elevage.argent }} €
+</p>
+
+<h2>Individus présents</h2>
+<ul>
+    {% for individu in individus %}
+        <li>
+            Sexe : {{ individu.get_sexe_display }} |
+            Âge : {{ individu.age }} mois
+            {% if individu.gravide %}| Gravide{% endif %}
+        </li>
+    {% empty %}
+        <li>Aucun individu dans cet élevage.</li>
+    {% endfor %}
+</ul>
+
+<p><a href="{% url 'liste_elevages' %}">← Retour à la liste</a></p>
