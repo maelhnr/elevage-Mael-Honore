@@ -1,0 +1,15 @@
+<h1>Liste des élevages</h1>
+
+<ul>
+    {% for elevage in elevages %}
+        <li>
+            Joueur : {{ elevage.nom_joueur }} |
+            Lapins M/F : {{ elevage.nombre_males }}/{{ elevage.nombre_femelles }} |
+            Nourriture : {{ elevage.quantite_nourriture }}g |
+            Cages : {{ elevage.nombre_cages }} |
+            Argent : {{ elevage.argent }} €
+        </li>
+    {% empty %}
+        <li>Aucun élevage enregistré pour le moment.</li>
+    {% endfor %}
+</ul>
