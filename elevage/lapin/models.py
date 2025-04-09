@@ -12,5 +12,25 @@ class Elevage(models.Model):
     def __str__(self):
         return f"Élevage de {self.nom_joueur} - Créé le {self.date_creation.strftime('%d/%m/%Y')}"
     
+class Individu(models.Model):
+    SEXE_CHOICES = [
+        ('M', 'Mâle'),
+        ('F', 'Femelle'),
+    ]
+    ETAT_CHOICES = [
+        ('present', 'Présent'),
+        ('vendu', 'Vendu'),
+        ('mort', 'Mort'),
+        ('gravide', 'Gravide'),
+    ]
+    
+    elevage = models.ForeignKey(Elevage, on_delete=models.CASCADE, related_name="individus")
+    sexe = models.CharField(max_length=1, choices=SEXE_CHOICES)
+    age = models.IntegerField()  # en mois
+    etat = models.CharField(max_length=10, choices=ETAT_CHOICES, default='present')
+    
+    def __str__(self):
+        return f"{self.sexe} - {self.age} mois - {self.etat}"
+    
 
 
