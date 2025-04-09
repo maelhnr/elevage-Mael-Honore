@@ -6,7 +6,7 @@
 </head>
 <body>
     <h1>Initialiser une nouvelle partie</h1>
-    <form method="post">
+    <form method="post" action="{% url 'nouveau_elevage' %}">
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit">Démarrer la partie</button>
