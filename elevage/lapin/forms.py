@@ -13,3 +13,9 @@ class ElevageForm(forms.ModelForm):
             'nombre_cages': 'Nombre de cages',
             'argent': 'Argent (€)',
         }
+        
+class Actions(forms.Form):
+    lapins_males_vendus = forms.IntegerField(min_value=0, required=False, label="Lapins mâles vendus", initial=0)
+    lapins_femelles_vendus = forms.IntegerField(min_value=0, required=False, label="Lapins femelles vendues", initial=0)
+    nourriture_achetee = forms.IntegerField(min_value=0, required=False, label="Quantité de nourriture achetée (g)", initial=0)
+    cages_achetees = forms.IntegerField(min_value=0, required=False, label="Nombre de cages achetées", initial=0)
