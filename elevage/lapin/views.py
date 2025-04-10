@@ -40,7 +40,10 @@ def liste(request):
 
 def elevage(request, elevage_id):
     elevage = get_object_or_404(Elevage, id=elevage_id)
-    individus = Individu.objects.filter(elevage=elevage, etat='P')  # On affiche uniquement les vivants
+    individus = Individu.objects.filter(
+    elevage=elevage,
+    etat__in=['P', 'G'] 
+    )
     return render(request, 'elevage/elevage.html', {
         'elevage': elevage,
         'individus': individus,
