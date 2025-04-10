@@ -27,7 +27,7 @@ def nouveau(request):
                     etat='P'  # Présent
                 )
 
-            return redirect('elevage_detail', elevage_id=elevage.id)
+            return redirect('detail_elevage', elevage_id=elevage.id)
     else:
         form = ElevageForm()
 
@@ -43,7 +43,7 @@ def elevage(request, elevage_id):
     individus = Individu.objects.filter(
     elevage=elevage,
     etat__in=['P', 'G'] 
-    )
+)
     return render(request, 'elevage/elevage.html', {
         'elevage': elevage,
         'individus': individus,
