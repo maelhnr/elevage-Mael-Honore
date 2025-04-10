@@ -18,44 +18,59 @@ def liste(request):
 
 def elevage(request, elevage_id):
     elevage = get_object_or_404(Elevage, id=elevage_id)
-    individus = Individu.objects.filter(elevage=elevage, etat='PRESENT')
-    form = Actions(request.POST or None)
-
-    if request.method == "POST" and form.is_valid():
-        # Extraction des données
-        vendus_m = form.cleaned_data['lapins_males_vendus']
-        vendus_f = form.cleaned_data['lapins_femelles_vendus']
-        nourriture_achetee = form.cleaned_data['nourriture_achetee']
-        cages_achetees = form.cleaned_data['cages_achetees']
-
-        # Comptage des lapins actuels
-        nb_males = individus.filter(sexe='M').count()
-        nb_femelles = individus.filter(sexe='F').count()
-
-        # Vérification des ordres
-        prix_nourriture = 0.002
-        prix_cage = 10
-        cout_total = nourriture_achetee * prix_nourriture + cages_achetees * prix_cage  # Exemple : 2€/kg de nourriture, 10€/cage
-        if vendus_m > nb_males or vendus_f > nb_femelles:
-            form.add_error(None, "Vous ne pouvez pas vendre plus de lapins que vous n'en avez.")
-        elif cout_total > elevage.argent:
-            form.add_error(None, "Fonds insuffisants pour cet achat.")
-        else:
-            # Marquer les lapins comme vendus
-            individus.filter(sexe='M')[:vendus_m].update(etat='VENDU')
-            individus.filter(sexe='F')[:vendus_f].update(etat='VENDU')
-
-            # Appliquer les achats
-            elevage.quantite_nourriture += nourriture_achetee
-            elevage.nombre_cages += cages_achetees
-            elevage.argent -= cout_total
-
-            elevage.save()
-            return redirect('elevage_detail', elevage_id=elevage.id)
-
-    context = {
+    individus = Individu.objects.filter(elevage=elevage, etat='P')  # On affiche uniquement les vivants
+    return render(request, 'elevage/elevage.html', {
         'elevage': elevage,
         'individus': individus,
-        'form': form,
-    }
-    return render(request, 'elevage/elevage.html', context)
+    })
+
+# def elevage(request, elevage_id):
+#     elevage = get_object_or_404(Elevage, id=elevage_id)
+#     individus = Individu.objects.filter(elevage=elevage, etat='PRESENT')
+#     form = Actions(request.POST or None)
+
+#     if request.method == "POST" and form.is_valid():
+#         # Extraction des données
+#         vendus_m = form.cleaned_data['lapins_males_vendus']
+#         vendus_f = form.cleaned_data['lapins_femelles_vendus']
+#         nourriture_achetee = form.cleaned_data['nourriture_achetee']
+#         cages_achetees = form.cleaned_data['cages_achetees']
+
+#         # Comptage des lapins actuels
+#         nb_males = individus.filter(sexe='M').count()
+#         nb_femelles = individus.filter(sexe='F').count()
+
+#         # Vérification des ordres
+#         prix_nourriture = 0.002
+#         prix_cage = 10
+#         cout_total = nourriture_achetee * prix_nourriture + cages_achetees * prix_cage  # Exemple : 2€/kg de nourriture, 10€/cage
+#         if vendus_m > nb_males or vendus_f > nb_femelles:
+#             form.add_error(None, "Vous ne pouvez pas vendre plus de lapins que vous n'en avez.")
+#         elif cout_total > elevage.argent:
+#             form.add_error(None, "Fonds insuffisants pour cet achat.")
+#         else:
+#             # Marquer les lapins comme vendus 
+#             lapins_males = individus.filter(sexe='M')[:vendus_m]
+#             for lapin in lapins_males:
+#                 lapin.etat = 'VENDU'
+#                 lapin.save()
+
+#             lapins_femelles = individus.filter(sexe='F')[:vendus_f]
+#             for lapin in lapins_femelles:
+#                 lapin.etat = 'VENDU'
+#                 lapin.save()
+
+#             # Appliquer les achats
+#             elevage.quantite_nourriture += nourriture_achetee
+#             elevage.nombre_cages += cages_achetees
+#             elevage.argent -= cout_total
+
+#             elevage.save()
+#             return redirect('elevage_detail', elevage_id=elevage.id)
+
+#     context = {
+#         'elevage': elevage,
+#         'individus': individus,
+#         'form': form,
+#     }
+#     return render(request, 'elevage/elevage.html', context)
