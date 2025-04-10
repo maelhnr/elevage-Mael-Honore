@@ -6,11 +6,33 @@ def nouveau(request):
     if request.method == 'POST':
         form = ElevageForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect('liste_elevages')  # Redirection à définir plus tard
+            elevage = form.save()
+
+            # Création automatique des individus
+            nb_femelles = form.cleaned_data['nombre_femelles']
+            nb_males = form.cleaned_data['nombre_males']
+
+            for _ in range(nb_femelles):
+                Individu.objects.create(
+                    elevage=elevage,
+                    sexe='F',
+                    age=0,
+                    etat='P'  # Présent
+                )
+            for _ in range(nb_males):
+                Individu.objects.create(
+                    elevage=elevage,
+                    sexe='M',
+                    age=0,
+                    etat='P'  # Présent
+                )
+
+            return redirect('elevage_detail', elevage_id=elevage.id)
     else:
         form = ElevageForm()
+
     return render(request, 'elevage/nouveau.html', {'form': form})
+
 
 def liste(request):
     elevages = Elevage.objects.all().order_by('-date_creation')
