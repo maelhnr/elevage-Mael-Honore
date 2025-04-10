@@ -42,8 +42,8 @@ class Regle(models.Model):
     prix_vente_lapin = models.DecimalField(max_digits=5, decimal_places=2)
 
     # Consommation
-    conso_2_mois = models.DecimalField(max_digits=4, decimal_places=2, help_text="Conso en g/mois pour un lapin de 2 mois")
-    conso_3_mois_et_plus = models.DecimalField(max_digits=4, decimal_places=2, help_text="Conso en g/mois à partir de 3 mois")
+    conso_2_mois = models.DecimalField(max_digits=6, decimal_places=2, help_text="Conso en g/mois pour un lapin de 2 mois")
+    conso_3_mois_et_plus = models.DecimalField(max_digits=6, decimal_places=2, help_text="Conso en g/mois à partir de 3 mois")
 
     # Reproduction
     age_min_gravide = models.IntegerField(help_text="Âge minimum (mois) pour être gravide")
