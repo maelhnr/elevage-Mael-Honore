@@ -12,7 +12,7 @@
         <li>
             Sexe : {{ individu.get_sexe_display }} |
             Âge : {{ individu.age }} mois
-            {% if individu.gravide %}| Gravide{% endif %}
+            {% if individu.etat == 'G' %}| Gravide{% endif %}
         </li>
     {% empty %}
         <li>Aucun individu dans cet élevage.</li>
