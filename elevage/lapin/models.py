@@ -1,4 +1,6 @@
 from django.db import models
+from random import randint, choice
+
 
 class Elevage(models.Model):
     nom_joueur = models.CharField(max_length=100)
@@ -12,8 +14,97 @@ class Elevage(models.Model):
     def __str__(self):
         return f"Élevage de {self.nom_joueur} - Créé le {self.date_creation.strftime('%d/%m/%Y')}"
     
-from django.db import models
+    def jouer_tour(self, nourriture_achetee, cages_achetees):
+        regle = Regle.objects.first()  # On suppose qu'il n'y en a qu'une
 
+        # Appliquer les achats
+        self.quantite_nourriture += nourriture_achetee
+        self.nombre_cages += cages_achetees
+        self.argent -= nourriture_achetee * regle.prix_nourriture + cages_achetees * regle.prix_cage
+        self.save()
+
+        individus = self.individu_set.filter(etat__in=['P', 'G']) # Tous les vivants
+
+        morts_faim = []
+        morts_maladie = []
+        naissances = []
+        
+        # Vieillissement des individus
+        for individu in individus:
+            individu.age += 1
+            individu.save()
+            
+         # Nourriture : calcul de la consommation et mort si pénurie
+        individus = self.individu_set.filter(etat__in=['P', 'G'])
+        for individu in individus:
+            if individu.age == 1:
+                consommation = 0  # lait maternel
+            elif individu.age == 2:
+                consommation = regle.conso_2_mois
+            else:
+                consommation = regle.conso_3_mois_et_plus
+
+            if self.quantite_nourriture >= consommation:
+                self.quantite_nourriture -= consommation
+            else:
+                individu.etat = 'M'  # Mort
+                individu.save()
+                morts_faim.append(individu)
+
+        self.save()
+
+        # Surpopulation
+        vivants = self.individu_set.filter(etat__in=['P', 'G'])
+        adultes_et_jeunes = vivants.exclude(age__in=[0, 1, 2])
+        
+        if adultes_et_jeunes.count() > self.nombre_cages * regle.seuil_surpopulation:
+            for individu in vivants:
+                if individu.age > 1 and randint(1, 100) <= 30:  # 30% de chance de mourir
+                    individu.etat = 'M'
+                    individu.save()
+                    morts_maladie.append(individu)
+
+        # Gestation : accouchement des femelles gravides
+        femelles_gravides = self.individu_set.filter(sexe='F', etat='G')
+        
+        for femelle in femelles_gravides:
+            nb_petits = randint(1, regle.nb_max_par_portee)
+            for _ in range(nb_petits):
+                sexe = choice(['M', 'F'])
+                bebe = Individu.objects.create(
+                    elevage=self,
+                    age=0,
+                    sexe=sexe,
+                    etat='P'
+                )
+                naissances.append(bebe)
+                
+            # La femelle n'est plus gravide
+            femelle.etat = 'P'
+            femelle.save()
+            
+        
+             # Nouvelle gestation
+            femelles_potentielles = self.individu_set.filter(
+                sexe='F',
+                etat='P',
+                age__gte=regle.age_min_gravide,
+                age__lte=regle.age_max_gravide
+            )
+            
+            nb_males_adultes = self.individu_set.filter(sexe='M', etat='P', age__gte=regle.age_min_gravide).count()
+            if nb_males_adultes > 0:
+                for femelle in femelles_potentielles:
+                    if randint(1, 100) <= 70:  # 70% de chance de tomber enceinte
+                        femelle.etat = 'G'
+                        femelle.save()
+
+        return {
+            'morts_faim': morts_faim,
+            'morts_maladie': morts_maladie,
+            'naissances': naissances
+        }
+    
 class Individu(models.Model):
     class Sexe(models.TextChoices):
         MALE = 'M', 'Mâle'
@@ -33,7 +124,6 @@ class Individu(models.Model):
     def __str__(self):
         return f"{self.get_sexe_display()} - {self.age} mois - {self.get_etat_display()}"
 
-from django.db import models
 
 class Regle(models.Model):
     # Prix
