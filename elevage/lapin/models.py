@@ -10,7 +10,7 @@ class Elevage(models.Model):
     nombre_cages = models.PositiveIntegerField(default=0)
     argent = models.DecimalField(max_digits=10, decimal_places=2)
     date_creation = models.DateTimeField(auto_now_add=True)
-    tour = models.PositiveIntegerField(default=1)
+    tour = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return f"Élevage de {self.nom_joueur} - Créé le {self.date_creation.strftime('%d/%m/%Y')}"
