@@ -80,6 +80,8 @@ def elevage(request, elevage_id):
 
             # Appliquer les achats
             resultats_tour = elevage.jouer_tour(nourriture_achetee, cages_achetees)
+            form = Actions()  # Reset form après un tour
+
 
     context = {
         'elevage': elevage,

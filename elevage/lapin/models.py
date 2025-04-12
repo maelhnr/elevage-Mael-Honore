@@ -10,12 +10,15 @@ class Elevage(models.Model):
     nombre_cages = models.PositiveIntegerField(default=0)
     argent = models.DecimalField(max_digits=10, decimal_places=2)
     date_creation = models.DateTimeField(auto_now_add=True)
+    tour = models.PositiveIntegerField(default=1)
 
     def __str__(self):
         return f"Élevage de {self.nom_joueur} - Créé le {self.date_creation.strftime('%d/%m/%Y')}"
     
     def jouer_tour(self, nourriture_achetee, cages_achetees):
         regle = Regle.objects.first()  # On suppose qu'il n'y en a qu'une
+        self.tour += 1
+        self.save()
 
         # Appliquer les achats
         self.quantite_nourriture += nourriture_achetee or 0
