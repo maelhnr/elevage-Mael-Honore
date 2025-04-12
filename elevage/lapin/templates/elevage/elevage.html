@@ -6,6 +6,24 @@
     Argent : {{ elevage.argent }} €
 </p>
 
+{% if resultats_tour %}
+    <div class="tour-resultats">
+        <h2>Résumé du tour</h2>
+
+        {% if resultats_tour.morts_faim %}
+            <p><strong>Morts de faim :</strong> {{ resultats_tour.morts_faim|length }}</p>
+        {% endif %}
+
+        {% if resultats_tour.morts_maladie %}
+            <p><strong>Morts par maladie :</strong> {{ resultats_tour.morts_maladie|length }}</p>
+        {% endif %}
+
+        {% if resultats_tour.naissances %}
+            <p><strong>Naissances :</strong> {{ resultats_tour.naissances|length }}</p>
+        {% endif %}
+    </div>
+{% endif %}
+
 <h2>Individus présents</h2>
 <ul>
     {% for individu in individus %}
@@ -25,6 +43,5 @@
     {{ form.as_p }}
     <button type="submit">Valider le tour</button>
 </form>
-
 
 <p><a href="{% url 'liste_elevages' %}">← Retour à la liste</a></p>

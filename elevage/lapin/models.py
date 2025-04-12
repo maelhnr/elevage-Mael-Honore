@@ -18,12 +18,12 @@ class Elevage(models.Model):
         regle = Regle.objects.first()  # On suppose qu'il n'y en a qu'une
 
         # Appliquer les achats
-        self.quantite_nourriture += nourriture_achetee
-        self.nombre_cages += cages_achetees
-        self.argent -= nourriture_achetee * regle.prix_nourriture + cages_achetees * regle.prix_cage
+        self.quantite_nourriture += nourriture_achetee or 0
+        self.nombre_cages += cages_achetees or 0
+        self.argent -= (nourriture_achetee or 0) * regle.prix_nourriture + (cages_achetees or 0) * regle.prix_cage
         self.save()
 
-        individus = self.individu_set.filter(etat__in=['P', 'G']) # Tous les vivants
+        individus = self.individus.filter(etat__in=['P', 'G']) # Tous les vivants
 
         morts_faim = []
         morts_maladie = []
@@ -35,7 +35,7 @@ class Elevage(models.Model):
             individu.save()
             
          # Nourriture : calcul de la consommation et mort si pénurie
-        individus = self.individu_set.filter(etat__in=['P', 'G'])
+        individus = self.individus.filter(etat__in=['P', 'G'])
         for individu in individus:
             if individu.age == 1:
                 consommation = 0  # lait maternel
@@ -54,7 +54,7 @@ class Elevage(models.Model):
         self.save()
 
         # Surpopulation
-        vivants = self.individu_set.filter(etat__in=['P', 'G'])
+        vivants = self.individus.filter(etat__in=['P', 'G'])
         adultes_et_jeunes = vivants.exclude(age__in=[0, 1, 2])
         
         if adultes_et_jeunes.count() > self.nombre_cages * regle.seuil_surpopulation:
@@ -65,7 +65,7 @@ class Elevage(models.Model):
                     morts_maladie.append(individu)
 
         # Gestation : accouchement des femelles gravides
-        femelles_gravides = self.individu_set.filter(sexe='F', etat='G')
+        femelles_gravides = self.individus.filter(sexe='F', etat='G')
         
         for femelle in femelles_gravides:
             nb_petits = randint(1, regle.nb_max_par_portee)
@@ -84,20 +84,20 @@ class Elevage(models.Model):
             femelle.save()
             
         
-             # Nouvelle gestation
-            femelles_potentielles = self.individu_set.filter(
-                sexe='F',
-                etat='P',
-                age__gte=regle.age_min_gravide,
-                age__lte=regle.age_max_gravide
-            )
+        # Nouvelle gestation
+        femelles_potentielles = self.individus.filter(
+            sexe='F',
+            etat='P',
+            age__gte=regle.age_min_gravide,
+            age__lte=regle.age_max_gravide
+        )
             
-            nb_males_adultes = self.individu_set.filter(sexe='M', etat='P', age__gte=regle.age_min_gravide).count()
-            if nb_males_adultes > 0:
-                for femelle in femelles_potentielles:
-                    if randint(1, 100) <= 70:  # 70% de chance de tomber enceinte
-                        femelle.etat = 'G'
-                        femelle.save()
+        nb_males_adultes = self.individus.filter(sexe='M', etat='P', age__gte=regle.age_min_gravide).count()
+        if nb_males_adultes > 0:
+           for femelle in femelles_potentielles:
+                if randint(1, 100) <= 70:  # 70% de chance de tomber enceinte
+                    femelle.etat = 'G'
+                    femelle.save()
 
         return {
             'morts_faim': morts_faim,
