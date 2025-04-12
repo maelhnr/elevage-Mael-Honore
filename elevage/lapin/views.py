@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import ElevageForm, Actions
-from .models import Elevage, Individu
+from .models import Elevage, Individu, Regle
 from decimal import Decimal
 
 def nouveau(request):
@@ -60,9 +60,8 @@ def elevage(request, elevage_id):
         nb_femelles = individus.filter(sexe='F').count()
 
         # Vérification des ordres
-        prix_nourriture = Decimal('0.002')
-        prix_cage = Decimal('10')
-        cout_total = nourriture_achetee * prix_nourriture + cages_achetees * prix_cage  # Exemple : 2€/kg de nourriture, 10€/cage
+        regle = Regle.objects.first()  # On suppose toujours qu’il n’y en a qu’une
+        cout_total = nourriture_achetee * regle.prix_nourriture + cages_achetees * regle.prix_cage 
         if vendus_m > nb_males or vendus_f > nb_femelles:
             form.add_error(None, "Vous ne pouvez pas vendre plus de lapins que vous n'en avez.")
         elif cout_total > elevage.argent:
@@ -80,16 +79,12 @@ def elevage(request, elevage_id):
                 lapin.save()
 
             # Appliquer les achats
-            elevage.quantite_nourriture += nourriture_achetee
-            elevage.nombre_cages += cages_achetees
-            elevage.argent -= cout_total
-
-            elevage.save()
-            return redirect('detail_elevage', elevage_id=elevage.id)
+            resultats_tour = elevage.jouer_tour(nourriture_achetee, cages_achetees)
 
     context = {
         'elevage': elevage,
         'individus': individus,
         'form': form,
+        'resultats_tour': resultats_tour if request.method == "POST" and form.is_valid() else None,
     }
     return render(request, 'elevage/elevage.html', context)
