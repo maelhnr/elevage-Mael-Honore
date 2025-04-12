@@ -11,6 +11,8 @@ class Elevage(models.Model):
     argent = models.DecimalField(max_digits=10, decimal_places=2)
     date_creation = models.DateTimeField(auto_now_add=True)
     tour = models.PositiveIntegerField(default=0)
+    fin_du_jeu = models.BooleanField(default=False)
+
 
     def __str__(self):
         return f"Élevage de {self.nom_joueur} - Créé le {self.date_creation.strftime('%d/%m/%Y')}"
@@ -101,6 +103,11 @@ class Elevage(models.Model):
                 if randint(1, 100) <= 70:  # 70% de chance de tomber enceinte
                     femelle.etat = 'G'
                     femelle.save()
+        
+        if self.individus.filter(etat__in=['P', 'G']).count() == 0:
+            self.fin_du_jeu = True
+            self.save()
+
 
         return {
             'morts_faim': morts_faim,

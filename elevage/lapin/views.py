@@ -47,8 +47,14 @@ def elevage(request, elevage_id):
     etat__in=['P', 'G'] 
     )
     form = Actions(request.POST or None)
+    resultats_tour = None
+    message = None
+    
+    if elevage.fin_du_jeu:
+        message = "Fin du jeu : il ne reste plus aucun lapin vivant."
+        form = None
 
-    if request.method == "POST" and form.is_valid():
+    elif request.method == "POST" and form.is_valid():
         # Extraction des données
         vendus_m = form.cleaned_data['lapins_males_vendus']
         vendus_f = form.cleaned_data['lapins_femelles_vendus']
@@ -87,6 +93,8 @@ def elevage(request, elevage_id):
         'elevage': elevage,
         'individus': individus,
         'form': form,
-        'resultats_tour': resultats_tour if request.method == "POST" and form.is_valid() else None,
+        'resultats_tour': resultats_tour if form and request.method == "POST" and form.is_valid() else None,
+        'message': message,
+
     }
     return render(request, 'elevage/elevage.html', context)

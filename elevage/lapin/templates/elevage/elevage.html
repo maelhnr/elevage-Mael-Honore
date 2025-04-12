@@ -39,11 +39,17 @@
     {% endfor %}
 </ul>
 
-<h2>Actions du tour</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Valider le tour</button>
-</form>
+{% if form %}
+    <h2>Actions du tour</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Valider le tour</button>
+    </form>
+{% endif %}
+
+{% if message %}
+    <p style="color: red;"><strong>{{ message }}</strong></p>
+{% endif %}
 
 <p><a href="{% url 'liste_elevages' %}">← Retour à la liste</a></p>
