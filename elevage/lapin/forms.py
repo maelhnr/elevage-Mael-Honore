@@ -13,6 +13,12 @@ class ElevageForm(forms.ModelForm):
             'nombre_cages': 'Nombre de cages',
             'argent': 'Argent (€)',
         }
+    
+    def clean_argent(self):
+        argent = self.cleaned_data.get('argent')
+        if argent is not None and argent < 0:
+            raise forms.ValidationError("Le montant de départ ne peut pas être négatif.")
+        return argent
         
 class Actions(forms.Form):
     lapins_males_vendus = forms.IntegerField(min_value=0, required=False, label="Lapins mâles vendus", initial=0)
