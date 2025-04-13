@@ -3,20 +3,30 @@
 {% block title %}Liste des élevages{% endblock %}
 
 {% block content %}
-<h1>📋 Liste des élevages</h1>
+<div class="container mt-4">
+    <h1 class="mb-4">📋 Liste des élevages</h1>
 
-<ul class="list-group">
-    {% for elevage in elevages %}
-        <li class="list-group-item">
-            Joueur : <strong>{{ elevage.nom_joueur }}</strong> |
-            Lapins M/F : {{ elevage.nombre_males }}/{{ elevage.nombre_femelles }} |
-            Nourriture : {{ elevage.quantite_nourriture }}g |
-            Cages : {{ elevage.nombre_cages }} |
-            Argent : {{ elevage.argent }} €
-        </li>
-    {% empty %}
-        <li class="list-group-item text-muted">Aucun élevage enregistré pour le moment.</li>
-    {% endfor %}
-</ul>
+    <!-- Barre de recherche -->
+    <form method="get" class="input-group mb-4">
+        <input type="text" name="q" class="form-control" placeholder="Rechercher un joueur..." value="{{ query }}">
+        <button class="btn btn-primary" type="submit">🔍 Rechercher</button>
+    </form>
+
+    <!-- Liste des élevages -->
+    <ul class="list-group">
+        {% for elevage in elevages %}
+            <a href="{% url 'detail_elevage' elevage.id %}" class="list-group-item list-group-item-action">
+                👤 <strong>{{ elevage.nom_joueur }}</strong> —
+                🐇 M/F : {{ elevage.nombre_males }}/{{ elevage.nombre_femelles }} |
+                🍽 {{ elevage.quantite_nourriture }}g |
+                🏠 {{ elevage.nombre_cages }} cages |
+                💰 {{ elevage.argent }} €
+            </a>
+        {% empty %}
+            <li class="list-group-item text-muted">Aucun élevage enregistré pour le moment.</li>
+        {% endfor %}
+    </ul>
+</div>
 {% endblock %}
+
 

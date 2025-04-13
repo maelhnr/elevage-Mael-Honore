@@ -1,7 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import ElevageForm, Actions
 from .models import Elevage, Individu, Regle
-from decimal import Decimal
 
 def nouveau(request):
     if request.method == 'POST':
@@ -36,8 +35,17 @@ def nouveau(request):
 
 
 def liste(request):
-    elevages = Elevage.objects.all().order_by('-date_creation')
-    return render(request, 'elevage/liste.html', {'elevages': elevages})
+    query = request.GET.get('q', '')
+    if query:
+        elevages = Elevage.objects.filter(nom_joueur__icontains=query)
+    else:
+        elevages = Elevage.objects.all()
+
+    context = {
+        'elevages': elevages,
+        'query': query,
+    }
+    return render(request, 'elevage/liste.html', context)
 
 
 def elevage(request, elevage_id):
