@@ -20,7 +20,12 @@
                 🐇 M/F : {{ elevage.nombre_males }}/{{ elevage.nombre_femelles }} |
                 🍽 {{ elevage.quantite_nourriture }}g |
                 🏠 {{ elevage.nombre_cages }} cages |
-                💰 {{ elevage.argent }} €
+                💰 {{ elevage.argent }} € |
+                {% if elevage.fin_du_jeu %}
+                <span class="badge bg-danger">Terminé</span>
+                {% else %}
+                <span class="badge bg-success">En cours</span>
+                {% endif %}
             </a>
         {% empty %}
             <li class="list-group-item text-muted">Aucun élevage enregistré pour le moment.</li>
