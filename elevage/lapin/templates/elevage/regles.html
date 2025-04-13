@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}Règles du jeu{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">📜 Règles du jeu</h1>
+
+    <p>Bienvenue dans <strong>Bunny Manager</strong> ! Gère ton élevage avec soin et stratégie. Voici les règles à connaître :</p>
+
+    <h3>⏳ Durée du jeu</h3>
+    <ul>
+        <li>Chaque <strong>tour</strong> du jeu représente <strong>1 mois</strong></li>
+    </ul>
+
+    <h3>💰 Économie</h3>
+    <ul>
+        <li>Prix d'une unité de nourriture : <strong>0,01 € / g</strong></li>
+        <li>Prix d’une cage : <strong>10 €</strong></li>
+        <li>Prix de vente d’un lapin : <strong>50 €</strong></li>
+    </ul>
+
+    <h3>🥕 Alimentation</h3>
+    <ul>
+        <li>Un <strong>adulte</strong> consomme <strong>250 g / jour</strong></li>
+        <li>Un <strong>lapereau</strong> consomme :
+            <ul>
+                <li><strong>1er mois</strong> : uniquement du lait maternel (gratuit)</li>
+                <li><strong>2ème mois</strong> : 100 g / jour</li>
+                <li><strong>à partir du 3ème mois</strong> : 250 g / jour</li>
+            </ul>
+        </li>
+        <li>Un individu qui manque de nourriture pendant un mois <strong>meurt</strong></li>
+    </ul>
+
+    <h3>🐰 Croissance et reproduction</h3>
+    <ul>
+        <li>Un lapin atteint l’<strong>âge adulte</strong> à <strong>3 mois</strong></li>
+        <li>Une femelle peut être gravide :
+            <ul>
+                <li>À partir de <strong>6 mois</strong></li>
+                <li>Jusqu’à <strong>48 mois</strong> (4 ans)</li>
+            </ul>
+        </li>
+        <li><strong>Gestation</strong> : 1 mois</li>
+        <li><strong>Naissances</strong> : 1 à 4 lapereaux par portée</li>
+        <li>Une femelle peut redevenir gravide quelques jours après une mise bas</li>
+        <li><strong>La reproduction</strong> est possible uniquement si un <strong>mâle adulte</strong> est présent dans l’élevage</li>
+    </ul>
+
+    <h3>🏠 Cages et surpopulation</h3>
+    <ul>
+        <li>Une cage peut contenir <strong>jusqu'à 6 individus</strong> sans problème</li>
+        <li>Au-delà de <strong>10 individus</strong> par cage : <strong>risque de maladie et de mortalité accrue</strong></li>
+        <li><strong>Les lapereaux de moins d’un mois</strong> ne comptent pas dans la limite de surpopulation</li>
+    </ul>
+
+    <h3>🎯 Objectif du jeu</h3>
+    <p>Le jeu se termine lorsque tous tes lapins sont morts ou vendus. Ton objectif est de <strong>faire prospérer ton élevage</strong> le plus longtemps possible, tout en gérant efficacement les ressources 🧠💵</p>
+
+    <a href="{% url 'menu' %}" class="btn btn-secondary mt-4">← Retour au menu</a>
+</div>
+{% endblock %}
+

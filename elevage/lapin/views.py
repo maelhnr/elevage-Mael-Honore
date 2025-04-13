@@ -110,3 +110,7 @@ def elevage(request, elevage_id):
 
 def menu(request):
     return render(request, 'menu.html', {'hide_navbar': True})
+
+def regles_jeu(request):
+    return render(request, 'elevage/regles.html')
+

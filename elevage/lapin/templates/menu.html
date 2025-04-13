@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h1 class="mb-4">🐇 Bienvenue à Bunny Land !</h1>
+    <h1 class="mb-4">🐇 Bienvenue dans Bunny Manager !</h1>
     <div class="list-group">
         <a href="{% url 'admin:index' %}" class="list-group-item list-group-item-action">
             🔧 Accès à l’administration
@@ -13,9 +13,10 @@
         <a href="{% url 'liste_elevages' %}" class="list-group-item list-group-item-action">
             📋 Voir la liste des élevages
         </a>
-        {% comment %} <a href="{% url 'regles' %}" class="list-group-item list-group-item-action">
-            📘 Voir les règles du jeu
-        </a> {% endcomment %}
+        <a href="{% url 'regles_jeu' %}" class="list-group-item list-group-item-action">
+            📜 Règles du jeu
+        </a>
+
     </div>
 </div>
 {% endblock %}
