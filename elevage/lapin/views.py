@@ -74,10 +74,13 @@ def elevage(request, elevage_id):
 
         # Vérification des ordres
         regle = Regle.objects.first()  # On suppose toujours qu’il n’y en a qu’une
+        revenu_vente = (vendus_m + vendus_f) * regle.prix_vente_lapin
         cout_total = nourriture_achetee * regle.prix_nourriture + cages_achetees * regle.prix_cage
+        argent_apres_vente = elevage.argent + revenu_vente
+
         if vendus_m > nb_males or vendus_f > nb_femelles:
             form.add_error(None, "Vous ne pouvez pas vendre plus de lapins que vous n'en avez.")
-        elif cout_total > elevage.argent:
+        elif cout_total > argent_apres_vente:
             form.add_error(None, "Fonds insuffisants pour cet achat.")
         else:
             # Marquer les lapins comme vendus 
@@ -92,7 +95,7 @@ def elevage(request, elevage_id):
                 lapin.save()
 
             # Appliquer les achats
-            resultats_tour = elevage.jouer_tour(nourriture_achetee, cages_achetees)
+            resultats_tour = elevage.jouer_tour(nourriture_achetee, cages_achetees, vendus_m, vendus_f)
             form = Actions()  # Reset form après un tour
 
 

@@ -17,15 +17,19 @@ class Elevage(models.Model):
     def __str__(self):
         return f"Élevage de {self.nom_joueur} - Créé le {self.date_creation.strftime('%d/%m/%Y')}"
     
-    def jouer_tour(self, nourriture_achetee, cages_achetees):
+    def jouer_tour(self, nourriture_achetee, cages_achetees, vendus_m, vendus_f):
         regle = Regle.objects.first()  # On suppose qu'il n'y en a qu'une
         self.tour += 1
         self.save()
+        
+        #Vente lapins
+        revenu = (vendus_m + vendus_f) * regle.prix_vente_lapin
+        self.argent += revenu
 
         # Appliquer les achats
-        self.quantite_nourriture += nourriture_achetee or 0
-        self.nombre_cages += cages_achetees or 0
-        self.argent -= (nourriture_achetee or 0) * regle.prix_nourriture + (cages_achetees or 0) * regle.prix_cage
+        self.quantite_nourriture += nourriture_achetee 
+        self.nombre_cages += cages_achetees
+        self.argent -= nourriture_achetee * regle.prix_nourriture + cages_achetees * regle.prix_cage
         self.save()
 
         individus = self.individus.filter(etat__in=['P', 'G']) # Tous les vivants
