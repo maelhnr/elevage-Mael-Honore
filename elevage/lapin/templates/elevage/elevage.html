@@ -1,3 +1,20 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Élevage de lapins</title>
+    <style>
+        .errorlist {
+            color: red;
+            font-weight: bold;
+            list-style: none;
+            margin: 0.5em 0;
+            padding: 0;
+        }
+    </style>
+</head>
+<body>
+
 {% if not fin_du_jeu %}
     <h1>Élevage de {{ elevage.nom_joueur }} - Tour n°{{ elevage.tour }}</h1>
 
@@ -25,6 +42,7 @@
         {% endif %}
     </div>
 {% endif %}
+
 {% if not fin_du_jeu %}
     <h2>Lapins présents ({{ individus|length }})</h2>
     <ul>
@@ -57,21 +75,12 @@
     </div>
 {% else %}
     <h2>Actions du tour</h2>
-
-    {% if form.non_field_errors %}
-        <div style="color: red; margin-bottom: 1em;">
-            {% for error in form.non_field_errors %}
-                <p><strong>{{ error }}</strong></p>
-            {% endfor %}
-        </div>
-    {% endif %}
-
     <form method="post">
         {% csrf_token %}
-        <p>{{ form.lapins_males_vendus.label_tag }} {{ form.lapins_males_vendus }}</p>
-        <p>{{ form.lapins_femelles_vendus.label_tag }} {{ form.lapins_femelles_vendus }}</p>
-        <p>{{ form.nourriture_achetee.label_tag }} {{ form.nourriture_achetee }}</p>
-        <p>{{ form.cages_achetees.label_tag }} {{ form.cages_achetees }}</p>
+        {{ form.as_p }}
         <button type="submit">Valider le tour</button>
     </form>
 {% endif %}
+
+</body>
+</html>

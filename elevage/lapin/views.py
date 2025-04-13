@@ -55,10 +55,10 @@ def elevage(request, elevage_id):
 
     elif form_is_valid:
         # Extraction des données
-        vendus_m = form.cleaned_data['lapins_males_vendus']
-        vendus_f = form.cleaned_data['lapins_femelles_vendus']
-        nourriture_achetee = form.cleaned_data['nourriture_achetee']
-        cages_achetees = form.cleaned_data['cages_achetees']
+        vendus_m = form.cleaned_data['lapins_males_vendus'] or 0
+        vendus_f = form.cleaned_data['lapins_femelles_vendus'] or 0
+        nourriture_achetee = form.cleaned_data['nourriture_achetee'] or 0
+        cages_achetees = form.cleaned_data['cages_achetees'] or 0
 
         # Comptage des lapins actuels
         nb_males = individus.filter(sexe='M').count()
@@ -66,7 +66,7 @@ def elevage(request, elevage_id):
 
         # Vérification des ordres
         regle = Regle.objects.first()  # On suppose toujours qu’il n’y en a qu’une
-        cout_total = (nourriture_achetee or 0) * regle.prix_nourriture + (cages_achetees or 0) * regle.prix_cage
+        cout_total = nourriture_achetee * regle.prix_nourriture + cages_achetees * regle.prix_cage
         if vendus_m > nb_males or vendus_f > nb_femelles:
             form.add_error(None, "Vous ne pouvez pas vendre plus de lapins que vous n'en avez.")
         elif cout_total > elevage.argent:
