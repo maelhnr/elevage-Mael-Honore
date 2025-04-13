@@ -39,7 +39,7 @@ def liste(request):
     if query:
         elevages = Elevage.objects.filter(nom_joueur__icontains=query)
     else:
-        elevages = Elevage.objects.all()
+        elevages = Elevage.objects.order_by('-date_creation')
 
     context = {
         'elevages': elevages,
