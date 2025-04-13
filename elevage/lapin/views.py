@@ -11,7 +11,7 @@ def nouveau(request):
 
             # Création automatique des individus
             nb_femelles = form.cleaned_data['nombre_femelles']
-            nb_males = form.cleaned_data['nombre_males']
+            nb_males = form.cleaned_data['nombre_males']    
 
             for _ in range(nb_femelles):
                 Individu.objects.create(
@@ -98,3 +98,7 @@ def elevage(request, elevage_id):
         'lapins_vendus_f': vendus_f if form_is_valid else 0,
     }
     return render(request, 'elevage/elevage.html', context)
+
+
+def menu(request):
+    return render(request, 'menu.html', {'hide_navbar': True})
