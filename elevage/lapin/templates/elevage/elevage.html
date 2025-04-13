@@ -1,12 +1,12 @@
-<h1>Détails de l'élevage de {{ elevage.nom_joueur }}</h1>
+{% if not fin_du_jeu %}
+    <h1>Élevage de {{ elevage.nom_joueur }} - Tour n°{{ elevage.tour }}</h1>
 
-<h3>Tour actuel : {{ elevage.tour }}</h3>
-
-<p>
-    Nourriture : {{ elevage.quantite_nourriture }}g<br>
-    Cages : {{ elevage.nombre_cages }}<br>
-    Argent : {{ elevage.argent }} €
-</p>
+    <p>
+        Nourriture : {{ elevage.quantite_nourriture }}g<br>
+        Cages : {{ elevage.nombre_cages }}<br>
+        Argent : {{ elevage.argent }} €
+    </p>
+    {% endif %}
 
 {% if resultats_tour %}
     <div class="tour-resultats">
@@ -25,21 +25,37 @@
         {% endif %}
     </div>
 {% endif %}
+{% if not fin_du_jeu %}
+    <h2>Individus présents</h2>
+    <ul>
+        {% for individu in individus %}
+            <li>
+                Sexe : {{ individu.get_sexe_display }} |
+                Âge : {{ individu.age }} mois
+                {% if individu.etat == 'G' %}| Gravide{% endif %}
+            </li>
+        {% empty %}
+            <li>Aucun individu dans cet élevage.</li>
+        {% endfor %}
+    </ul>
+{% endif %}
 
-<h2>Individus présents</h2>
-<ul>
-    {% for individu in individus %}
-        <li>
-            Sexe : {{ individu.get_sexe_display }} |
-            Âge : {{ individu.age }} mois
-            {% if individu.etat == 'G' %}| Gravide{% endif %}
-        </li>
-    {% empty %}
-        <li>Aucun individu dans cet élevage.</li>
-    {% endfor %}
-</ul>
-
-{% if form %}
+{% if fin_du_jeu %}
+    <div style="padding: 2em; background-color: #ffe6e6; border: 2px solid red; border-radius: 10px; margin-top: 2em;">
+        <h2>💀 Fin de l'élevage</h2>
+        <p>Malheureusement, tous vos lapins sont morts ou vendus... 🐇</p>
+        <p>Vous avez atteint le <strong>tour {{ elevage.tour }}</strong>.</p>
+        <p><strong>Score final :</strong></p>
+        <ul>
+            <li>Argent restant : {{ elevage.argent }} €</li>
+            <li>Nourriture restante : {{ elevage.quantite_nourriture }} g</li>
+            <li>Cages restantes : {{ elevage.nombre_cages }}</li>
+        </ul>
+        <a href="{% url 'nouveau_elevage' %}" style="display: inline-block; margin-top: 1em; padding: 0.5em 1em; background-color: #28a745; color: white; border-radius: 5px;">🔁 Recommencer un élevage</a>
+        <br><br>
+        <a href="{% url 'liste_elevages' %}">← Retour à la liste</a>
+    </div>
+{% else %}
     <h2>Actions du tour</h2>
     <form method="post">
         {% csrf_token %}
@@ -47,9 +63,3 @@
         <button type="submit">Valider le tour</button>
     </form>
 {% endif %}
-
-{% if message %}
-    <p style="color: red;"><strong>{{ message }}</strong></p>
-{% endif %}
-
-<p><a href="{% url 'liste_elevages' %}">← Retour à la liste</a></p>

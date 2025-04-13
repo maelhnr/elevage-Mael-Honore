@@ -48,10 +48,8 @@ def elevage(request, elevage_id):
     )
     form = Actions(request.POST or None)
     resultats_tour = None
-    message = None
     
     if elevage.fin_du_jeu:
-        message = "Fin du jeu : il ne reste plus aucun lapin vivant."
         form = None
 
     elif request.method == "POST" and form.is_valid():
@@ -92,9 +90,9 @@ def elevage(request, elevage_id):
     context = {
         'elevage': elevage,
         'individus': individus,
-        'form': form,
+        'form': form if not elevage.fin_du_jeu else None,
         'resultats_tour': resultats_tour if form and request.method == "POST" and form.is_valid() else None,
-        'message': message,
+        'fin_du_jeu': elevage.fin_du_jeu,
 
     }
     return render(request, 'elevage/elevage.html', context)
