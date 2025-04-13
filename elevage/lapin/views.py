@@ -94,6 +94,7 @@ def elevage(request, elevage_id):
         'form': form if not elevage.fin_du_jeu else None,
         'resultats_tour': resultats_tour if form_is_valid else None,
         'fin_du_jeu': elevage.fin_du_jeu,
-
+        'lapins_vendus_m': vendus_m if form_is_valid else 0,
+        'lapins_vendus_f': vendus_f if form_is_valid else 0,
     }
     return render(request, 'elevage/elevage.html', context)

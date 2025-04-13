@@ -40,6 +40,19 @@
         {% if resultats_tour.naissances %}
             <p><strong>Naissances :</strong> {{ resultats_tour.naissances|length }}</p>
         {% endif %}
+
+        {% if lapins_vendus_m or lapins_vendus_f %}
+             <p><strong>Lapins vendus :</strong>
+                {{ lapins_vendus_m }} mâle(s),
+                {{ lapins_vendus_f }} femelle(s)
+            </p>
+        {% endif %}
+
+        {% if not resultats_tour.morts_faim and not resultats_tour.naissances and not resultats_tour.morts_maladie and not lapins_vendus_m and not lapins_vendus_f %}
+             <p><em>Aucun événement notable ce tour.</em></p>
+        {% endif %}
+
+
     </div>
 {% endif %}
 
