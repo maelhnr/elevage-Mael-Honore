@@ -48,11 +48,12 @@ def elevage(request, elevage_id):
     )
     form = Actions(request.POST or None)
     resultats_tour = None
+    form_is_valid = request.method == "POST" and form.is_valid()
     
     if elevage.fin_du_jeu:
         form = None
 
-    elif request.method == "POST" and form.is_valid():
+    elif form_is_valid:
         # Extraction des données
         vendus_m = form.cleaned_data['lapins_males_vendus']
         vendus_f = form.cleaned_data['lapins_femelles_vendus']
@@ -91,7 +92,7 @@ def elevage(request, elevage_id):
         'elevage': elevage,
         'individus': individus,
         'form': form if not elevage.fin_du_jeu else None,
-        'resultats_tour': resultats_tour if form and request.method == "POST" and form.is_valid() else None,
+        'resultats_tour': resultats_tour if form_is_valid else None,
         'fin_du_jeu': elevage.fin_du_jeu,
 
     }

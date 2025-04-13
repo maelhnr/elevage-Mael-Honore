@@ -2,11 +2,11 @@
     <h1>Élevage de {{ elevage.nom_joueur }} - Tour n°{{ elevage.tour }}</h1>
 
     <p>
-        Nourriture : {{ elevage.quantite_nourriture }}g<br>
+        Nourriture : {{ elevage.quantite_nourriture }} g<br>
         Cages : {{ elevage.nombre_cages }}<br>
         Argent : {{ elevage.argent }} €
     </p>
-    {% endif %}
+{% endif %}
 
 {% if resultats_tour %}
     <div class="tour-resultats">
@@ -26,7 +26,7 @@
     </div>
 {% endif %}
 {% if not fin_du_jeu %}
-    <h2>Individus présents</h2>
+    <h2>Lapins présents ({{ individus|length }})</h2>
     <ul>
         {% for individu in individus %}
             <li>
@@ -43,7 +43,7 @@
 {% if fin_du_jeu %}
     <div style="padding: 2em; background-color: #ffe6e6; border: 2px solid red; border-radius: 10px; margin-top: 2em;">
         <h2>💀 Fin de l'élevage</h2>
-        <p>Malheureusement, tous vos lapins sont morts ou vendus... 🐇</p>
+        <p>Malheureusement, tous vos lapins sont morts ou ont été vendus... 🐇</p>
         <p>Vous avez atteint le <strong>tour {{ elevage.tour }}</strong>.</p>
         <p><strong>Score final :</strong></p>
         <ul>
@@ -57,9 +57,21 @@
     </div>
 {% else %}
     <h2>Actions du tour</h2>
+
+    {% if form.non_field_errors %}
+        <div style="color: red; margin-bottom: 1em;">
+            {% for error in form.non_field_errors %}
+                <p><strong>{{ error }}</strong></p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
+        <p>{{ form.lapins_males_vendus.label_tag }} {{ form.lapins_males_vendus }}</p>
+        <p>{{ form.lapins_femelles_vendus.label_tag }} {{ form.lapins_femelles_vendus }}</p>
+        <p>{{ form.nourriture_achetee.label_tag }} {{ form.nourriture_achetee }}</p>
+        <p>{{ form.cages_achetees.label_tag }} {{ form.cages_achetees }}</p>
         <button type="submit">Valider le tour</button>
     </form>
 {% endif %}
