@@ -97,7 +97,7 @@ class Elevage(models.Model):
             age__lte=regle.age_max_gravide
         )
             
-        nb_males_adultes = self.individus.filter(sexe='M', etat='P', age__gte=regle.age_min_gravide).count()
+        nb_males_adultes = self.individus.filter(sexe='M', etat='P', age__gte=3).count()
         if nb_males_adultes > 0:
            for femelle in femelles_potentielles:
                 if randint(1, 100) <= 70:  # 70% de chance de tomber enceinte
