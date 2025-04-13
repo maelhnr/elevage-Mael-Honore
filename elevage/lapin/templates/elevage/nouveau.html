@@ -1,33 +1,22 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>Nouvel élevage</title>
-    <style>
-        .errorlist {
-            color: red;
-            font-weight: bold;
-            list-style: none;
-            padding: 0;
-            margin: 0.5em 0;
-        }
-    </style>
-</head>
-<body>
-    <h1>Initialiser une nouvelle partie</h1>
+{% extends 'base.html' %}
 
-    {% if form.non_field_errors %}
-        <ul class="errorlist">
-            {% for error in form.non_field_errors %}
-                <li>{{ error }}</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
+{% block title %}Nouvel élevage{% endblock %}
 
-    <form method="post" action="{% url 'nouveau_elevage' %}">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Démarrer la partie</button>
-    </form>
-</body>
-</html>
+{% block content %}
+<h1>🐰 Créer un nouvel élevage</h1>
+
+{% if form.non_field_errors %}
+    <div class="alert alert-danger">
+        {% for error in form.non_field_errors %}
+            <p>{{ error }}</p>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<form method="post" class="mt-4">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Démarrer la partie</button>
+</form>
+{% endblock %}
+

@@ -1,78 +1,59 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>Élevage de lapins</title>
-    <style>
-        .errorlist {
-            color: red;
-            font-weight: bold;
-            list-style: none;
-            margin: 0.5em 0;
-            padding: 0;
-        }
-    </style>
-</head>
-<body>
+{% extends 'base.html' %}
 
-{% if not fin_du_jeu %}
+{% block title %}Élevage de {{ elevage.nom_joueur }}{% endblock %}
+
+{% block content %}
+
+<div class="mb-4">
     <h1>Élevage de {{ elevage.nom_joueur }} - Tour n°{{ elevage.tour }}</h1>
-
     <p>
-        Nourriture : {{ elevage.quantite_nourriture }} g<br>
-        Cages : {{ elevage.nombre_cages }}<br>
-        Argent : {{ elevage.argent }} €
+        <strong>Nourriture :</strong> {{ elevage.quantite_nourriture }} g<br>
+        <strong>Cages :</strong> {{ elevage.nombre_cages }}<br>
+        <strong>Argent :</strong> {{ elevage.argent }} €
     </p>
-{% endif %}
+</div>
 
 {% if resultats_tour %}
-    <div class="tour-resultats">
+    <div class="alert alert-info">
         <h2>Résumé du tour</h2>
-
         {% if resultats_tour.morts_faim %}
             <p><strong>Morts de faim :</strong> {{ resultats_tour.morts_faim|length }}</p>
         {% endif %}
-
         {% if resultats_tour.morts_maladie %}
             <p><strong>Morts par maladie :</strong> {{ resultats_tour.morts_maladie|length }}</p>
         {% endif %}
-
         {% if resultats_tour.naissances %}
             <p><strong>Naissances :</strong> {{ resultats_tour.naissances|length }}</p>
         {% endif %}
-
         {% if lapins_vendus_m or lapins_vendus_f %}
-             <p><strong>Lapins vendus :</strong>
-                {{ lapins_vendus_m }} mâle(s),
-                {{ lapins_vendus_f }} femelle(s)
-            </p>
+            <p><strong>Lapins vendus :</strong> {{ lapins_vendus_m }} mâle(s), {{ lapins_vendus_f }} femelle(s)</p>
         {% endif %}
-
         {% if not resultats_tour.morts_faim and not resultats_tour.naissances and not resultats_tour.morts_maladie and not lapins_vendus_m and not lapins_vendus_f %}
-             <p><em>Aucun événement notable ce tour.</em></p>
+            <p><em>Aucun événement notable ce tour.</em></p>
         {% endif %}
-
-
     </div>
 {% endif %}
 
 {% if not fin_du_jeu %}
     <h2>Lapins présents ({{ individus|length }})</h2>
-    <ul>
+    <ul class="list-group mb-4">
         {% for individu in individus %}
-            <li>
-                Sexe : {{ individu.get_sexe_display }} |
-                Âge : {{ individu.age }} mois
-                {% if individu.etat == 'G' %}| Gravide{% endif %}
+            <li class="list-group-item">
+                Sexe : {{ individu.get_sexe_display }} | Âge : {{ individu.age }} mois{% if individu.etat == 'G' %} | Gravide{% endif %}
             </li>
         {% empty %}
-            <li>Aucun individu dans cet élevage.</li>
+            <li class="list-group-item">Aucun individu dans cet élevage.</li>
         {% endfor %}
     </ul>
-{% endif %}
 
-{% if fin_du_jeu %}
-    <div style="padding: 2em; background-color: #ffe6e6; border: 2px solid red; border-radius: 10px; margin-top: 2em;">
+    <h2>Actions du tour</h2>
+    <form method="post" class="mb-5">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary mt-2">Valider le tour</button>
+    </form>
+{% else %}
+    <div class="alert alert-danger">
         <h2>💀 Fin de l'élevage</h2>
         <p>Malheureusement, tous vos lapins sont morts ou ont été vendus... 🐇</p>
         <p>Vous avez atteint le <strong>tour {{ elevage.tour }}</strong>.</p>
@@ -82,18 +63,9 @@
             <li>Nourriture restante : {{ elevage.quantite_nourriture }} g</li>
             <li>Cages restantes : {{ elevage.nombre_cages }}</li>
         </ul>
-        <a href="{% url 'nouveau_elevage' %}" style="display: inline-block; margin-top: 1em; padding: 0.5em 1em; background-color: #28a745; color: white; border-radius: 5px;">🔁 Recommencer un élevage</a>
-        <br><br>
-        <a href="{% url 'liste_elevages' %}">← Retour à la liste</a>
+        <a href="{% url 'nouveau_elevage' %}" class="btn btn-success mt-2">🔁 Recommencer un élevage</a>
+        <a href="{% url 'liste_elevages' %}" class="btn btn-secondary mt-2">← Retour à la liste</a>
     </div>
-{% else %}
-    <h2>Actions du tour</h2>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Valider le tour</button>
-    </form>
 {% endif %}
 
-</body>
-</html>
+{% endblock %}

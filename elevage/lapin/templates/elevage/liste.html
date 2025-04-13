@@ -1,15 +1,22 @@
-<h1>Liste des élevages</h1>
+{% extends 'base.html' %}
 
-<ul>
+{% block title %}Liste des élevages{% endblock %}
+
+{% block content %}
+<h1>📋 Liste des élevages</h1>
+
+<ul class="list-group">
     {% for elevage in elevages %}
-        <li>
-            Joueur : {{ elevage.nom_joueur }} |
+        <li class="list-group-item">
+            Joueur : <strong>{{ elevage.nom_joueur }}</strong> |
             Lapins M/F : {{ elevage.nombre_males }}/{{ elevage.nombre_femelles }} |
             Nourriture : {{ elevage.quantite_nourriture }}g |
             Cages : {{ elevage.nombre_cages }} |
             Argent : {{ elevage.argent }} €
         </li>
     {% empty %}
-        <li>Aucun élevage enregistré pour le moment.</li>
+        <li class="list-group-item text-muted">Aucun élevage enregistré pour le moment.</li>
     {% endfor %}
 </ul>
+{% endblock %}
+
