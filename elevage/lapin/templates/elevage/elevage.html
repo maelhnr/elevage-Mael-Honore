@@ -52,6 +52,15 @@
         {{ form.as_p }}
         <button type="submit" class="btn btn-primary mt-2">Valider le tour</button>
     </form>
+
+    <h2>🔮 Prévision si vous ne faites rien</h2>
+    <ul>
+        <li>Naissances : {{ prevision.naissances }}</li>
+        <li> Morts par faim : {{ prevision.morts_faim }}</li>
+        <li> Morts maladie : {{ prevision.morts_maladie }}</li>
+        <li> Lapins vivants après : {{ prevision.total_vivants_apres }}</li>
+        <li> Nourriture restante : {{ prevision.nourriture_restante }} g</li>
+    </ul>
 {% else %}
     <div class="alert alert-danger">
         <h2>💀 Fin de l'élevage</h2>

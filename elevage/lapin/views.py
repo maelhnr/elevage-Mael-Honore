@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import ElevageForm, Actions
-from .models import Elevage, Individu, Regle
+from .models import Elevage, Individu, Regle  
+
 
 def nouveau(request):
     if request.method == 'POST':
@@ -58,6 +59,9 @@ def elevage(request, elevage_id):
     resultats_tour = None
     form_is_valid = request.method == "POST" and form.is_valid()
     
+    vendus_m = 0
+    vendus_f = 0
+    
     if elevage.fin_du_jeu:
         form = None
 
@@ -98,6 +102,7 @@ def elevage(request, elevage_id):
             resultats_tour = elevage.jouer_tour(nourriture_achetee, cages_achetees, vendus_m, vendus_f)
             form = Actions()  # Reset form après un tour
 
+    prevision = elevage.simulation_sans_action()
 
     context = {
         'elevage': elevage,
@@ -107,6 +112,7 @@ def elevage(request, elevage_id):
         'fin_du_jeu': elevage.fin_du_jeu,
         'lapins_vendus_m': vendus_m if form_is_valid else 0,
         'lapins_vendus_f': vendus_f if form_is_valid else 0,
+        'prevision': prevision
     }
     return render(request, 'elevage/elevage.html', context)
 

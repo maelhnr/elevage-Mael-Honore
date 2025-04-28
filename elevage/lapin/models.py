@@ -118,6 +118,52 @@ class Elevage(models.Model):
             'morts_maladie': morts_maladie,
             'naissances': naissances
         }
+        
+    def simulation_sans_action(self):
+        
+        regle = Regle.objects.first()
+        quantite_nourriture = self.quantite_nourriture
+        nombre_cages = self.nombre_cages
+        individus = self.individus.filter(etat__in=['P', 'G'])
+
+        morts_faim = 0
+        morts_maladie = 0
+        naissances = 0
+        
+        #Nourriture
+        for individu in individus:
+            age = individu.age + 1
+            if age == 1:
+                conso = 0
+            elif age == 2:
+                conso = float(regle.conso_2_mois)
+            else :
+                conso = float(regle.conso_3_mois_et_plus)
+            
+            if quantite_nourriture >= conso:
+                quantite_nourriture -= conso
+            else:
+                morts_faim += 1
+        
+        # Surpopulation
+        vivants = individus.filter(etat__in=['P', 'G'])
+        if len(vivants) > nombre_cages * regle.seuil_surpopulation:
+            morts_maladie = int( len(vivants)*0.3 )
+        
+        # Accouchement des femelles gravides
+        femelles_gravides = individus.filter(etat__in=['G'])
+        for femelle in femelles_gravides:
+            nb_petits = (1 + regle.nb_max_par_portee)
+            naissances = naissances + nb_petits
+        naissances = int(naissances)
+        
+        return {
+        'morts_faim': morts_faim,
+        'morts_maladie': morts_maladie,
+        'naissances': naissances,
+        'total_vivants_apres': len(individus) - morts_faim - morts_maladie + naissances,
+        'nourriture_restante': quantite_nourriture
+    }
     
 class Individu(models.Model):
     class Sexe(models.TextChoices):
@@ -161,6 +207,4 @@ class Regle(models.Model):
 
     def __str__(self):
         return "Règle de jeu"
-
-
 
