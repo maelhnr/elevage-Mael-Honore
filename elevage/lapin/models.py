@@ -118,11 +118,33 @@ class Elevage(models.Model):
             'morts_maladie': morts_maladie,
             'naissances': naissances
         }
+
+    def parametres_elevage(self):
+        regle = Regle.objects.first()
+        individus = self.individus.filter(etat__in=['P', 'G'])
         
+        concentration = len(individus)/self.nombre_cages
+        
+        consommation : float = 0.0
+        for individu in individus:
+            age = individu.age
+            if age == 0 :
+                consommation = consommation + 0.0
+            if age == 1 :
+                consommation = consommation + float(regle.conso_2_mois)
+            else :
+                consommation = consommation + float(regle.conso_3_mois_et_plus)
+        return {
+            'consommation': consommation,
+            'concentration': concentration,
+            
+        }
+
+    
     def simulation_sans_action(self):
         
         regle = Regle.objects.first()
-        quantite_nourriture = self.quantite_nourriture
+        quantite_nourriture = float(self.quantite_nourriture)
         nombre_cages = self.nombre_cages
         individus = self.individus.filter(etat__in=['P', 'G'])
 
@@ -134,14 +156,14 @@ class Elevage(models.Model):
         for individu in individus:
             age = individu.age + 1
             if age == 1:
-                conso = 0
+                conso = 0.0
             elif age == 2:
                 conso = float(regle.conso_2_mois)
             else :
                 conso = float(regle.conso_3_mois_et_plus)
             
             if quantite_nourriture >= conso:
-                quantite_nourriture -= conso
+                quantite_nourriture = quantite_nourriture - float(conso)
             else:
                 morts_faim += 1
         

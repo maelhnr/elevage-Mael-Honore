@@ -53,7 +53,14 @@
         <button type="submit" class="btn btn-primary mt-2">Valider le tour</button>
     </form>
 
-    <h2>🔮 Prévision si vous ne faites rien</h2>
+    <h2>Paramètres caractéristiques élevage</h2>
+    <ul>
+        <li>Consommation de l'élevage : {{ parametres.consommation }}g chaque mois</li>
+        <li>Concentration : {{ parametres.concentration }} lapins par cage</li>
+ 
+    </ul>
+
+    <h2>Prévision si vous ne faites rien</h2>
     <ul>
         <li>Naissances : {{ prevision.naissances }}</li>
         <li> Morts par faim : {{ prevision.morts_faim }}</li>

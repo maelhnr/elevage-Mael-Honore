@@ -102,6 +102,7 @@ def elevage(request, elevage_id):
             resultats_tour = elevage.jouer_tour(nourriture_achetee, cages_achetees, vendus_m, vendus_f)
             form = Actions()  # Reset form après un tour
 
+    parametres = elevage.parametres_elevage()
     prevision = elevage.simulation_sans_action()
 
     context = {
@@ -112,7 +113,9 @@ def elevage(request, elevage_id):
         'fin_du_jeu': elevage.fin_du_jeu,
         'lapins_vendus_m': vendus_m if form_is_valid else 0,
         'lapins_vendus_f': vendus_f if form_is_valid else 0,
+        'parametres': parametres,
         'prevision': prevision
+
     }
     return render(request, 'elevage/elevage.html', context)
 
