@@ -40,6 +40,12 @@
         {% for individu in individus %}
             <li class="list-group-item">
                 Sexe : {{ individu.get_sexe_display }} | Âge : {{ individu.age }} mois{% if individu.etat == 'G' %} | Gravide{% endif %}
+                | Santé : 
+                {% if individu.sante.malade %}
+                    Malade ({{ individu.sante.niveau_sante }}%)
+                {% else %}
+                    En bonne santé ({{ individu.sante.niveau_sante }}%)
+                {% endif %}
             </li>
         {% empty %}
             <li class="list-group-item">Aucun individu dans cet élevage.</li>
@@ -69,3 +75,4 @@
 {% endif %}
 
 {% endblock %}
+
