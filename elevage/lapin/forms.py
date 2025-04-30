@@ -29,3 +29,21 @@ class Actions(forms.Form):
     lapins_femelles_vendus = forms.IntegerField(min_value=0, required=False, label="Lapins femelles vendues", initial=0)
     nourriture_achetee = forms.IntegerField(min_value=0, required=False, label="Quantité de nourriture achetée (g)", initial=0)
     cages_achetees = forms.IntegerField(min_value=0, required=False, label="Nombre de cages achetées", initial=0)
+    
+    
+class SoignerLapinForm(forms.Form):
+    ACTION_CHOICES = [
+        ('total', '🔴 Soin Total - 10€ (Santé à 100%)'),
+        ('partiel', '🟡 Soin Partiel - 5€ (+50% santé)'),
+    ]
+    
+    action = forms.ChoiceField(
+        choices=ACTION_CHOICES,
+        widget=forms.RadioSelect(attrs={'class': 'form-check-input'}),
+        label="Type de soin"
+    )
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['action'].widget.attrs.update({'class': 'form-check-input'})
+

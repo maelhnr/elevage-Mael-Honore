@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .forms import ElevageForm, Actions
+from .forms import ElevageForm, Actions, SoignerLapinForm
 from .models import Elevage, Individu, Regle, Sante
 
 def nouveau(request):
@@ -119,4 +119,51 @@ def menu(request):
 
 def regles_jeu(request):
     return render(request, 'elevage/regles.html')
+
+def gestion_lapins(request, elevage_id):
+    elevage = get_object_or_404(Elevage, id=elevage_id)
+    individus = Individu.objects.filter(
+        elevage=elevage,
+        etat__in=['P', 'G'],
+        sante__vivant=True
+    ).select_related('sante')
+    
+    if request.method == 'POST':
+        lapin_id = request.POST.get('lapin_id')
+        action = request.POST.get('action')
+        
+        if lapin_id and action:
+            lapin = get_object_or_404(Individu, id=lapin_id, elevage=elevage)
+            
+            # Condition de soin modifiée pour inclure niveau_sante <= 0
+            if lapin.sante.malade or lapin.sante.niveau_sante <= 0:
+                cout = 10 if action == 'total' else 5
+                
+                if elevage.argent >= cout:
+                    if action == 'total':
+                        lapin.sante.niveau_sante = 100
+                    else:
+                        lapin.sante.niveau_sante = min(100, lapin.sante.niveau_sante + 50)
+                    
+                    lapin.sante.malade = False
+                    elevage.argent -= cout
+                    lapin.sante.save()
+                    elevage.save()
+                
+                return redirect('gestion_lapins', elevage_id=elevage.id)
+
+    return render(request, 'elevage/gestion_lapins.html', {
+        'elevage': elevage,
+        'individus': individus,
+    })
+
+
+
+
+
+
+
+
+
+
 

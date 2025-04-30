@@ -58,6 +58,10 @@
         {{ form.as_p }}
         <button type="submit" class="btn btn-primary mt-2">Valider le tour</button>
     </form>
+
+     <!-- Lien vers la page de gestion des soins des lapins -->
+     <a href="{% url 'gestion_lapins' elevage.id %}" class="btn btn-info mt-3">Soigner les lapins</a>
+     
 {% else %}
     <div class="alert alert-danger">
         <h2>💀 Fin de l'élevage</h2>
