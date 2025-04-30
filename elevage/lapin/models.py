@@ -3,6 +3,15 @@ from random import randint, choice
 
 
 class Elevage(models.Model):
+    
+    # Choix de la difficulté
+    DIFFICULTE_CHOICES = [
+        ('facile', 'Facile'),
+        ('moyen', 'Moyen'),
+        ('difficile', 'Difficile'),
+    ]
+    difficulte = models.CharField(max_length=10, choices=DIFFICULTE_CHOICES, default='moyen')
+    
     nom_joueur = models.CharField(max_length=100)
     nombre_males = models.PositiveIntegerField(default=0)
     nombre_femelles = models.PositiveIntegerField(default=0)
@@ -43,7 +52,23 @@ class Elevage(models.Model):
             individu.age += 1
             individu.save()
             
-         # Nourriture : calcul de la consommation et mort si pénurie
+        
+        
+        # Gestion de la santé
+        for individu in self.individus.filter(etat__in=['P', 'G'], age__gt=0):
+            if individu.sante is not None and individu.elevage is not None:
+                individu.sante.evolution()
+                
+        vivants = self.individus.filter(etat__in=['P', 'G'])
+        for individu in vivants:
+            sante = individu.sante  # Accès direct grâce à la relation OneToOne
+            if sante.vivant == False :
+                individu.etat = 'M'
+                individu.save()
+                morts_maladie.append(individu)
+                    
+            
+        # Nourriture : calcul de la consommation et mort si pénurie
         individus = self.individus.filter(etat__in=['P', 'G'])
         for individu in individus:
             if individu.age == 1:
@@ -84,9 +109,9 @@ class Elevage(models.Model):
                     elevage=self,
                     age=0,
                     sexe=sexe,
-                    etat='P'
+                    etat='P',
                 )
-                Sante.objects.create(individu=bebe)  #Ajout de la santé de l'individu
+                bebe.save()
                 naissances.append(bebe)
                 
             # La femelle n'est plus gravide
@@ -112,11 +137,6 @@ class Elevage(models.Model):
         if self.individus.filter(etat__in=['P', 'G']).count() == 0:
             self.fin_du_jeu = True
             self.save()
-            
-            
-        # Gestion de la santé
-        for individu in individus:
-            individu.sante.evolution()
 
 
         return {
@@ -141,16 +161,13 @@ class Individu(models.Model):
     age = models.PositiveIntegerField(help_text="Âge en mois")
     etat = models.CharField(max_length=1, choices=Etat.choices)
     sante = models.OneToOneField('Sante', on_delete=models.CASCADE, related_name='individu_sante', null=True, blank=True)
-            
-    def save(self, *args, **kwargs):
-        if not self.sante:
-            # Si l'individu n'a pas de santé associée, crée-la avec un niveau de 100
-            self.sante, created = Sante.objects.get_or_create(individu=self)
-            if created:
-                self.sante.niveau_sante = 100
-                self.sante.save()
 
-        super().save(*args, **kwargs)
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)  # Sauvegarder d'abord pour avoir un ID
+        if not hasattr(self, 'sante_individu') or not self.sante_individu:
+            sante = Sante.objects.create(individu=self, malade=False, niveau_sante=100)
+            self.sante = sante
+            super().save(update_fields=['sante'])  # Met à jour le lien sans refaire tout
 
     def __str__(self):
         return f"{self.get_sexe_display()} - {self.age} mois - {self.get_etat_display()}"
@@ -182,76 +199,72 @@ class Regle(models.Model):
 
 
 class Sante(models.Model):
-    individu = models.OneToOneField('Individu', on_delete=models.CASCADE, related_name='individu_sante')
     malade = models.BooleanField(default=False)
-    niveau_sante = models.IntegerField(default=100)  # Son pourcentage qui gère sa probabilité de mourir
-    dernier_soin = models.DateField(null=True, blank=True)  # Date du dernier soin
-    # Probabilités d'apparition de la maladie, guérison, contamination, mort
-    prob_maladie = models.FloatField(default=0.1)  # Probabilité d'apparition de la maladie
-    prob_guerison = models.FloatField(default=0.5)  # Probabilité de guérison
-    prob_contamination = models.FloatField(default=0.2)  # Probabilité de contamination des autres individus
-    prob_mort = models.FloatField(default=0.05)  # Probabilité de mort liée à la maladie
-
-    def tomber_malade(self):
-        """Fait tomber l'individu malade."""
-        self.malade = True
-        self.niveau_sante = max(self.niveau_sante - 30, 0)  # Réduction de santé liée à la maladie
-        self.save()
-
-    def guerir(self):
-        """Fait guérir l'individu malade."""
-        self.malade = False
-        self.niveau_sante = min(self.niveau_sante + 20, 100)  # Restauration de la santé
-        self.save()
-
-    def traiter(self, soin_montant):
-        """Application d'un soin. Augmente la probabilité de guérison."""
-        if soin_montant > 0:
-            self.niveau_sante = min(self.niveau_sante + soin_montant, 100)  # Soin augmente la santé
-            self.prob_guerison += soin_montant * 0.02  # Le soin améliore la probabilité de guérison
-            self.save()
-
-    def degrader(self):
-        """Dégrade la santé si l'individu est malade."""
-        if self.malade:
-            self.niveau_sante = max(self.niveau_sante - 15, 0)  # Dégradation continue de la santé en cas de maladie
-            self.save()
-
+    individu = models.OneToOneField('Individu', on_delete=models.CASCADE, related_name='sante_individu', null=False)
+    niveau_sante = models.IntegerField(default=100)
+    vivant = models.BooleanField(default=True)
+    
+    def is_guerir(self):
+        self.niveau_sante = 100
+        self.save()  # Sauvegarder après modification
+        
+    def is_malade(self):
+        self.niveau_sante = 0
+        self.save()  # Sauvegarder après modification
+        
+    def is_falling(self):
+        if self.niveau_sante >= 20 :
+            self.niveau_sante -= 20
+        else :
+            self.niveau_sante =0
+        self.save()  # Sauvegarder après modification
+    
+    def is_recovering(self):
+        if self.niveau_sante >= 20 :
+            self.niveau_sante += 20
+        else :
+            self.niveau_sante =0
+        self.save()  # Sauvegarder après modification
+        
     def evolution(self):
-        """Évolue l'état de santé de l'individu (maladie, guérison, mort)."""
-        # Calcul des risques d'événements
-        if self.malade:
-            # Risque de guérison
-            if randint(1, 100) <= int(self.prob_guerison * 100):
-                self.guerir()  # Tentative de guérison
+        individu = self.individu  # Accéder à l'individu lié à cette instance
+        regle = Regle.objects.first()
+        elevage = individu.elevage
 
-            # Risque de contamination d'autres individus
-            if randint(1, 100) <= int(self.prob_contamination * 100):
-                self.contaminer()  # Tente de contaminer d'autres individus
+        # Probabilités en fonction de la difficulté
+        prob_maladie, prob_guerison = 0, 0
+        if elevage.difficulte == 'facile':
+            prob_maladie, prob_guerison = 0.1, 0.7  # 10% de chance de tomber malade, 70% de chance de guérir
+        elif elevage.difficulte == 'moyen':
+            prob_maladie, prob_guerison = 0.3, 0.5  # 30% de chance de tomber malade, 50% de chance de guérir
+        elif elevage.difficulte == 'difficile':
+            prob_maladie, prob_guerison = 0.5, 0.3  # 50% de chance de tomber malade, 30% de chance de guérir
 
-            # Risque de mort
-            if randint(1, 100) <= int(self.prob_mort * 100):
-                self.mourir()  # Risque de mourir
-            else:
-                self.degrader()  # La maladie dégrade la santé si non guéri
-        else:
-            # Risque d'attraper une maladie
-            if randint(1, 100) <= int(self.prob_maladie * 100):
-                self.tomber_malade()  # L'individu tombe malade
+        # Nombre d'individus vivants et calcul de densité
+        individus_vivants = elevage.individus.filter(etat__in=['P', 'G'])
+        nb_individus = individus_vivants.count()
+        densite = nb_individus / elevage.nombre_cages if elevage.nombre_cages > 0 else nb_individus
 
-    def contaminer(self):
-        """Contamination d'autres individus."""
-        # Logique de contamination des autres individus à développer ici (facultatif pour l'instant)
-        pass
+        # Risques et chances basées sur la densité
+        risque_maladie = max(0, (densite - regle.nb_max_individus_par_cage) * 50)  # Risque basé sur la densité
+        chance_guerison = max(0, (regle.nb_max_individus_par_cage - densite) * 15)  # Chance de guérison
+        
+        # 1 seul jour pour survivre une fois malade plus d'1mois
+        if self.malade == True : 
+            self.vivant = False
 
-    def mourir(self):
-        """L'individu meurt à cause de la maladie."""
-        self.malade = False
-        self.niveau_sante = 0  # Mort = niveau de santé = 0
-        self.save()
+        # Application des probabilités
+        if randint(1, 100) <= int(chance_guerison * 100):  # Probabilité de guérison
+            self.is_recovering()
+            if randint(1, 100) <= int(prob_guerison * 100):  # Guérison
+                self.is_guerir()
 
-    def __str__(self):
-        return f"Santé de {self.individu} - {self.niveau_sante}%"
+        if randint(1, 100) <= int(risque_maladie * 100):  # Probabilité de maladie
+            self.is_falling()
+            if randint(1, 100) <= int(prob_maladie * 100):  # Maladie
+                self.is_malade()
+
+
         
 
 

@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import ElevageForm, Actions
-from .models import Elevage, Individu, Regle
+from .models import Elevage, Individu, Regle, Sante
 
 def nouveau(request):
     if request.method == 'POST':
@@ -10,23 +10,26 @@ def nouveau(request):
 
             # Création automatique des individus
             nb_femelles = form.cleaned_data['nombre_femelles']
-            nb_males = form.cleaned_data['nombre_males']    
+            nb_males = form.cleaned_data['nombre_males'] 
 
             for _ in range(nb_femelles):
-                Individu.objects.create(
+                individu = Individu.objects.create(
                     elevage=elevage,
                     sexe='F',
                     age=0,
-                    etat='P'  # Présent
+                    etat='P',  # Présent
                 )
+                individu.save()
+                
             for _ in range(nb_males):
-                Individu.objects.create(
+                individu = Individu.objects.create(
                     elevage=elevage,
                     sexe='M',
                     age=0,
-                    etat='P'  # Présent
+                    etat='P',  # Présent
                 )
-
+                individu.save()
+                
             return redirect('detail_elevage', elevage_id=elevage.id)
     else:
         form = ElevageForm()

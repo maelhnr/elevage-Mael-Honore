@@ -1,10 +1,13 @@
 from django import forms
 from .models import Elevage
 
+from django import forms
+from .models import Elevage
+
 class ElevageForm(forms.ModelForm):
     class Meta:
         model = Elevage
-        fields = ['nom_joueur', 'nombre_males', 'nombre_femelles', 'quantite_nourriture', 'nombre_cages', 'argent']
+        fields = ['nom_joueur', 'nombre_males', 'nombre_femelles', 'quantite_nourriture', 'nombre_cages', 'argent', 'difficulte']
         labels = {
             'nom_joueur': 'Nom du joueur',
             'nombre_males': 'Nombre de mâles',
@@ -12,8 +15,9 @@ class ElevageForm(forms.ModelForm):
             'quantite_nourriture': 'Quantité de nourriture (g)',
             'nombre_cages': 'Nombre de cages',
             'argent': 'Argent (€)',
+            'difficulte': 'Niveau de difficulté',
         }
-    
+
     def clean_argent(self):
         argent = self.cleaned_data.get('argent')
         if argent is not None and argent < 0:
