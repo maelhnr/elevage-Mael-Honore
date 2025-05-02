@@ -1,7 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import ElevageForm, Actions
 from .models import Elevage, Individu, Regle
+from django.contrib.auth.decorators import login_required
 
+@login_required
 def nouveau(request):
     if request.method == 'POST':
         form = ElevageForm(request.POST)
@@ -33,7 +35,7 @@ def nouveau(request):
 
     return render(request, 'elevage/nouveau.html', {'form': form})
 
-
+@login_required
 def liste(request):
     query = request.GET.get('q', '')
     if query:
@@ -42,12 +44,12 @@ def liste(request):
         elevages = Elevage.objects.order_by('-date_creation')
 
     context = {
-        'elevages': elevages,
+        'elevages': elevages, 
         'query': query,
     }
     return render(request, 'elevage/liste.html', context)
 
-
+@login_required
 def elevage(request, elevage_id):
     elevage = get_object_or_404(Elevage, id=elevage_id)
     individus = Individu.objects.filter(
