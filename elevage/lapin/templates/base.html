@@ -18,29 +18,49 @@
 </head>
 <body>
 
-    {% if not hide_navbar %}
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="{% url 'menu' %}">🐇 Bunny Manager</a>
-        <div class="collapse navbar-collapse">
-          <ul class="navbar-nav me-auto">
+  {% if not hide_navbar %}
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="{% url 'menu' %}">🐇 Bunny Manager</a>
+      <div class="collapse navbar-collapse">
+        
+        <!-- Liens de gauche -->
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'nouveau_elevage' %}">Nouvel élevage</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'liste_elevages' %}">Liste des élevages</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'regles_jeu' %}">Règles du jeu</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/">Admin</a>
+          </li>
+        </ul>
+  
+        <!-- Liens de droite -->
+        <ul class="navbar-nav ms-auto">
+          {% if user.is_authenticated %}
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'nouveau_elevage' %}">Nouvel élevage</a>
+              <span class="navbar-text me-2">👤 {{ user.username }}</span>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'liste_elevages' %}">Liste des élevages</a>
+              <a class="nav-link" href="{% url 'logout' %}">Se déconnecter</a>
             </li>
+          {% else %}
             <li class="nav-item">
-                <a class="nav-link" href="{% url 'regles_jeu' %}">Règles du jeu</a>
+              <a class="nav-link" href="{% url 'login' %}">Se connecter</a>
             </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/admin/">Admin</a>
-            </li>
-          </ul>
-        </div>
+          {% endif %}
+        </ul>
+  
       </div>
-    </nav>
-    {% endif %}
+    </div>
+  </nav>
+  {% endif %}
+  
     
 
 <div class="container mt-4">
