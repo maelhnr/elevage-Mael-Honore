@@ -43,10 +43,10 @@
         <!-- Liens de droite -->
         <ul class="navbar-nav ms-auto">
           {% if user.is_authenticated %}
-            <li class="nav-item">
-              <span class="navbar-text me-2">👤 {{ user.username }}</span>
-            </li>
-            <li class="nav-item">
+            <li class="nav-item d-flex align-items-center">
+              <!-- Avatar par défaut (peut être remplacé par une vraie image plus tard) -->
+              <img src="https://ui-avatars.com/api/?name={{ user.username }}&background=random&rounded=true" 
+                   alt="Avatar" width="32" height="32" class="rounded-circle me-2">
               <a class="nav-link" href="{% url 'logout' %}">Se déconnecter</a>
             </li>
           {% else %}
@@ -55,6 +55,7 @@
             </li>
           {% endif %}
         </ul>
+        
   
       </div>
     </div>
