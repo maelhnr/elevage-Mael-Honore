@@ -53,12 +53,14 @@ class Elevage(models.Model):
             individu.save()
             
         
+        ####################################################################################
         
         # Gestion de la santé
         for individu in self.individus.filter(etat__in=['P', 'G'], age__gt=0):
             if individu.sante is not None and individu.elevage is not None:
                 individu.sante.evolution()
                 
+        # Assassinat des lapins malades depuis plus d'1 mois
         vivants = self.individus.filter(etat__in=['P', 'G'])
         for individu in vivants:
             sante = individu.sante  # Accès direct grâce à la relation OneToOne
@@ -66,6 +68,8 @@ class Elevage(models.Model):
                 individu.etat = 'M'
                 individu.save()
                 morts_maladie.append(individu)
+                
+        ####################################################################################
                     
             
         # Nourriture : calcul de la consommation et mort si pénurie
@@ -160,15 +164,14 @@ class Individu(models.Model):
     sexe = models.CharField(max_length=1, choices=Sexe.choices)
     age = models.PositiveIntegerField(help_text="Âge en mois")
     etat = models.CharField(max_length=1, choices=Etat.choices)
-    sante = models.OneToOneField('Sante', on_delete=models.CASCADE, related_name='individu_sante', null=True, blank=True)
+    
 
     def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)  # Sauvegarder d'abord pour avoir un ID
-        if not hasattr(self, 'sante_individu') or not self.sante_individu:
-            sante = Sante.objects.create(individu=self, malade=False, niveau_sante=100)
-            self.sante = sante
-            super().save(update_fields=['sante'])  # Met à jour le lien sans refaire tout
-
+        created = not self.pk  # Vérifie si c'est une nouvelle instance
+        super().save(*args, **kwargs)
+        if created:  # Si nouvel individu, créez sa santé
+            Sante.objects.create(individu=self, malade=False, niveau_sante=100)
+            
     def __str__(self):
         return f"{self.get_sexe_display()} - {self.age} mois - {self.get_etat_display()}"
 
@@ -199,37 +202,45 @@ class Regle(models.Model):
 
 
 class Sante(models.Model):
+    # On va faire tober le lapin malade
     malade = models.BooleanField(default=False)
-    individu = models.OneToOneField('Individu', on_delete=models.CASCADE, related_name='sante_individu', null=False)
+    individu = models.OneToOneField('Individu', on_delete=models.CASCADE, related_name='sante', null=False)
+    # Niveau de santé de lapin, plus il diminue, plus il aura de chances de tomber malade
     niveau_sante = models.IntegerField(default=100)
+    # S'il a déja été malade le mois dernier, il devra mourir
     vivant = models.BooleanField(default=True)
     
     def is_guerir(self):
         self.niveau_sante = 100
-        self.save()  # Sauvegarder après modification
+        self.malade = False
+        self.save()  
         
     def is_malade(self):
         self.niveau_sante = 0
-        self.save()  # Sauvegarder après modification
+        self.malade = True
+        self.save()  
         
     def is_falling(self):
         if self.niveau_sante >= 20 :
             self.niveau_sante -= 20
         else :
-            self.niveau_sante =0
-        self.save()  # Sauvegarder après modification
+            self.niveau_sante = 0
+        self.save()  
     
     def is_recovering(self):
-        if self.niveau_sante >= 20 :
+        if self.niveau_sante <= 80 :
             self.niveau_sante += 20
         else :
-            self.niveau_sante =0
-        self.save()  # Sauvegarder après modification
+            self.niveau_sante = 100
+        self.save()  
+        
+    # FOnction d'évolution de santé des individus
         
     def evolution(self):
         individu = self.individu  # Accéder à l'individu lié à cette instance
         regle = Regle.objects.first()
         elevage = individu.elevage
+        
 
         # Probabilités en fonction de la difficulté
         prob_maladie, prob_guerison = 0, 0
@@ -246,22 +257,28 @@ class Sante(models.Model):
         densite = nb_individus / elevage.nombre_cages if elevage.nombre_cages > 0 else nb_individus
 
         # Risques et chances basées sur la densité
-        risque_maladie = max(0, (densite - regle.nb_max_individus_par_cage) * 50)  # Risque basé sur la densité
-        chance_guerison = max(0, (regle.nb_max_individus_par_cage - densite) * 15)  # Chance de guérison
+        risque_maladie = max(0, (densite - regle.nb_max_individus_par_cage) * 15 )  
+        # + 15% par lapin en trop dans l'elevage
+        chance_guerison = max(0, (regle.nb_max_individus_par_cage - densite) * 15)  
+        # + 5% Chance de guérison par place liberée dans l'elevage
         
         # 1 seul jour pour survivre une fois malade plus d'1mois
         if self.malade == True : 
             self.vivant = False
+            
+        # Tomber malade selon son niveau de santé
+        if randint(1, 100) >= int(self.niveau_sante): 
+            self.is_malade()
 
         # Application des probabilités
-        if randint(1, 100) <= int(chance_guerison * 100):  # Probabilité de guérison
+        if randint(1, 100) <= int(chance_guerison):  # Probabilité de guérison
             self.is_recovering()
-            if randint(1, 100) <= int(prob_guerison * 100):  # Guérison
+            if randint(1, 100) <= int(prob_guerison * 100):  # Guérison basée sur la difficulté
                 self.is_guerir()
 
         if randint(1, 100) <= int(risque_maladie * 100):  # Probabilité de maladie
             self.is_falling()
-            if randint(1, 100) <= int(prob_maladie * 100):  # Maladie
+            if randint(1, 100) <= int(prob_maladie * 100):  # Maladie basée sur la difficulté
                 self.is_malade()
 
 

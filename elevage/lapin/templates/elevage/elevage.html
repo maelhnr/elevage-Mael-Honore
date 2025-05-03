@@ -40,12 +40,18 @@
         {% for individu in individus %}
             <li class="list-group-item">
                 Sexe : {{ individu.get_sexe_display }} | Âge : {{ individu.age }} mois{% if individu.etat == 'G' %} | Gravide{% endif %}
+                <!-- Ajout de la santé pour chaque lapin -->
+                 
                 | Santé : 
-                {% if individu.sante.malade %}
-                    Malade ({{ individu.sante.niveau_sante }}%)
-                {% else %}
-                    En bonne santé ({{ individu.sante.niveau_sante }}%)
-                {% endif %}
+                    {% if individu.sante.niveau_sante < 50 %}
+                        <span style="color: red;">
+                    {% else %}
+                        <span style="color: green;">
+                    {% endif %}
+                        {{ individu.sante.niveau_sante }}%
+                    </span>
+                    | État : {% if individu.sante.malade %}<strong style="color: red;">Malade</strong>{% else %}Sain{% endif %}
+
             </li>
         {% empty %}
             <li class="list-group-item">Aucun individu dans cet élevage.</li>

@@ -13,22 +13,20 @@ def nouveau(request):
             nb_males = form.cleaned_data['nombre_males'] 
 
             for _ in range(nb_femelles):
-                individu = Individu.objects.create(
+                Individu.objects.create(
                     elevage=elevage,
                     sexe='F',
                     age=0,
                     etat='P',  # Présent
                 )
-                individu.save()
                 
             for _ in range(nb_males):
-                individu = Individu.objects.create(
+                Individu.objects.create(
                     elevage=elevage,
                     sexe='M',
                     age=0,
                     etat='P',  # Présent
                 )
-                individu.save()
                 
             return redirect('detail_elevage', elevage_id=elevage.id)
     else:
@@ -126,7 +124,7 @@ def gestion_lapins(request, elevage_id):
         elevage=elevage,
         etat__in=['P', 'G'],
         sante__vivant=True
-    ).select_related('sante')
+    ).select_related('sante')  # Pas de changement nécessaire
     
     if request.method == 'POST':
         lapin_id = request.POST.get('lapin_id')
@@ -135,7 +133,7 @@ def gestion_lapins(request, elevage_id):
         if lapin_id and action:
             lapin = get_object_or_404(Individu, id=lapin_id, elevage=elevage)
             
-            # Condition de soin modifiée pour inclure niveau_sante <= 0
+            # Condition de soin - accès via lapin.sante comme avant
             if lapin.sante.malade or lapin.sante.niveau_sante <= 0:
                 cout = 10 if action == 'total' else 5
                 
