@@ -15,6 +15,8 @@ class Elevage(models.Model):
     date_creation = models.DateTimeField(auto_now_add=True)
     tour = models.PositiveIntegerField(default=0)
     fin_du_jeu = models.BooleanField(default=False)
+    utilisateur = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+
 
 
     def __str__(self):

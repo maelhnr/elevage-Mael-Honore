@@ -9,7 +9,9 @@ def nouveau(request):
     if request.method == 'POST':
         form = ElevageForm(request.POST)
         if form.is_valid():
-            elevage = form.save()
+            elevage = form.save(commit=False)
+            elevage.utilisateur = request.user  # 👈 association à l'utilisateur connecté
+            elevage.save()
 
             # Création automatique des individus
             nb_femelles = form.cleaned_data['nombre_femelles']
@@ -36,16 +38,23 @@ def nouveau(request):
 
     return render(request, 'elevage/nouveau.html', {'form': form})
 
+
 @login_required
 def liste(request):
     query = request.GET.get('q', '')
-    if query:
-        elevages = Elevage.objects.filter(nom_joueur__icontains=query)
+    
+    if request.user.is_superuser:
+        elevages = Elevage.objects.all()
     else:
-        elevages = Elevage.objects.order_by('-date_creation')
+        elevages = Elevage.objects.filter(utilisateur=request.user)
+
+    if query:
+        elevages = elevages.filter(nom_joueur__icontains=query)
+
+    elevages = elevages.order_by('-date_creation')
 
     context = {
-        'elevages': elevages, 
+        'elevages': elevages,
         'query': query,
     }
     return render(request, 'elevage/liste.html', context)
