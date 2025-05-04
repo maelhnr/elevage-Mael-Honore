@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .forms import ElevageForm, Actions
-from .models import Elevage, Individu, Regle
+from .forms import ElevageForm, Actions, SignUpForm
+from .models import Elevage, Individu, Regle, Client
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import login
 
 @login_required
 def nouveau(request):
@@ -119,3 +120,16 @@ def menu(request):
 def regles_jeu(request):
     return render(request, 'elevage/regles.html')
 
+def signup_view(request):
+    if request.method == 'POST':
+        form = SignUpForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.first_name = form.cleaned_data['first_name']
+            user.last_name = form.cleaned_data['last_name']
+            user.save()
+            login(request, user)
+            return redirect('menu')
+    else:
+        form = SignUpForm()
+    return render(request, 'registration/signup.html', {'form': form})

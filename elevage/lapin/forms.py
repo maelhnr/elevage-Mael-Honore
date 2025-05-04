@@ -1,5 +1,7 @@
 from django import forms
 from .models import Elevage
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
 
 class ElevageForm(forms.ModelForm):
     class Meta:
@@ -25,3 +27,14 @@ class Actions(forms.Form):
     lapins_femelles_vendus = forms.IntegerField(min_value=0, required=False, label="Lapins femelles vendues", initial=0)
     nourriture_achetee = forms.IntegerField(min_value=0, required=False, label="Quantité de nourriture achetée (g)", initial=0)
     cages_achetees = forms.IntegerField(min_value=0, required=False, label="Nombre de cages achetées", initial=0)
+
+
+class SignUpForm(UserCreationForm):
+    email = forms.EmailField(required=True, help_text="Requis. Entrez une adresse valide.")
+    first_name = forms.CharField(max_length=30, required=True, label="Prénom")
+    last_name = forms.CharField(max_length=30, required=True, label="Nom")
+
+    class Meta:
+        model = User
+        fields = ('username', 'first_name', 'last_name', 'email', 'password1', 'password2')
+
