@@ -1,12 +1,22 @@
 from django.http import HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import ElevageForm, Actions, SignUpForm
-from .models import Elevage, Individu, Regle, Client
+from .models import Elevage, Individu, Regle
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login
+from django.contrib import messages
+
 
 @login_required
 def nouveau(request):
+    client = request.user.client
+    elevages_actifs = Elevage.objects.filter(utilisateur=request.user, fin_du_jeu=False).count()
+    limite = 1000 if client.is_premium else 3
+
+    if elevages_actifs >= limite:
+        messages.error(request, "Limite atteinte : vous ne pouvez posséder que 3 élevages actifs simultanément avec un compte Basic.")
+        return redirect('liste_elevages')
+        
     if request.method == 'POST':
         form = ElevageForm(request.POST)
         if form.is_valid():
@@ -43,7 +53,7 @@ def nouveau(request):
 @login_required
 def liste(request):
     query = request.GET.get('q', '')
-    
+
     if request.user.is_superuser:
         elevages = Elevage.objects.all()
     else:
@@ -54,11 +64,23 @@ def liste(request):
 
     elevages = elevages.order_by('-date_creation')
 
+    # Compteur d'élevages actifs
+    if request.user.is_authenticated and not request.user.is_superuser:
+        client = request.user.client
+        elevages_actifs = Elevage.objects.filter(utilisateur=request.user, fin_du_jeu=False).count()
+        limite = "∞" if client.is_premium else 3
+    else:
+        elevages_actifs = None
+        limite = None
+
     context = {
         'elevages': elevages,
         'query': query,
+        'elevages_actifs': elevages_actifs,
+        'limite': limite,
     }
     return render(request, 'elevage/liste.html', context)
+
 
 @login_required
 def elevage(request, elevage_id):
