@@ -1,3 +1,4 @@
+from django.http import HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import ElevageForm, Actions, SignUpForm
 from .models import Elevage, Individu, Regle, Client
@@ -62,6 +63,8 @@ def liste(request):
 @login_required
 def elevage(request, elevage_id):
     elevage = get_object_or_404(Elevage, id=elevage_id)
+    if elevage.utilisateur != request.user and not request.user.is_superuser: # sécurité accès élevage
+        return HttpResponseForbidden("Vous n'avez pas accès à cet élevage.")
     individus = Individu.objects.filter(
     elevage=elevage,
     etat__in=['P', 'G'] 
