@@ -167,3 +167,7 @@ def signup_view(request):
     else:
         form = SignUpForm()
     return render(request, 'registration/signup.html', {'form': form})
+
+@login_required
+def premium_info(request):
+    return render(request, 'elevage/premium_info.html')
