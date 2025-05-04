@@ -45,14 +45,22 @@
         <!-- Liens de droite -->
         <ul class="navbar-nav ms-auto">
           {% if user.is_authenticated %}
-            <li class="nav-item d-flex align-items-center">
-              <img src="{% static 'img/oreilles.png' %}" class="rounded-circle" width="30" height="30" alt="avatar">
-              {{ user.username }}
-              <a class="nav-link" href="{% url 'logout' %}">Se déconnecter</a>
-            </li>
+              <li class="nav-item d-flex align-items-center ms-auto">
+                <div class="d-flex align-items-center bg-light rounded-pill px-2 py-1" style="gap: 8px;">
+                  <img src="{% static 'img/oreilles.png' %}" class="rounded-circle border border-primary" width="32" height="32" alt="avatar">
+                  <span class="fw-semibold text-primary" style="font-family: 'Comic Sans MS', cursive;">
+                    {{ user.username|capfirst }}
+                  </span>
+                  <a class="btn btn-outline-danger btn-sm ms-2" href="{% url 'logout' %}">Se déconnecter</a>
+                </div>
+              </li>
+          
+
           {% else %}
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'login' %}">Se connecter</a>
+              <div class="d-flex align-items-center bg-light rounded-pill px-2 py-1" style="gap: 8px;">
+                <a class="btn btn-outline-danger btn-sm ms-2" href="{% url 'logout' %}">Se connecter</a>
+              </div>
             </li>
           {% endif %}
         </ul>
