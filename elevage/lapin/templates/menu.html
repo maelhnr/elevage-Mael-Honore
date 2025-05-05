@@ -3,7 +3,18 @@
 {% block content %}
 <div class="container mt-5">
     <h1 class="mb-4">🐇 Bienvenue dans Bunny Manager !</h1>
-    <div class="list-group">
+
+    {% if user.is_authenticated %}
+        <div class="alert alert-success">
+            Bonjour <strong>{{ user.username }}</strong> ! Ravi de vous revoir 🐰
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            Vous n'êtes pas connecté. <a href="{% url 'login' %}">Connectez-vous</a> pour gérer vos élevages !
+        </div>
+    {% endif %}
+
+    <div class="list-group mt-4">
         <a href="{% url 'admin:index' %}" class="list-group-item list-group-item-action">
             🔧 Accès à l’administration
         </a>
@@ -16,9 +27,12 @@
         <a href="{% url 'regles_jeu' %}" class="list-group-item list-group-item-action">
             📜 Règles du jeu
         </a>
-
+        <a href="{% url 'premium_info' %}" class="list-group-item list-group-item-action">
+            🎖 Avantages Premium
+        </a>
     </div>
 </div>
 {% endblock %}
+
 
 

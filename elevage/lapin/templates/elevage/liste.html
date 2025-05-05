@@ -6,6 +6,18 @@
 <div class="container mt-4">
     <h1 class="mb-4">📋 Liste des élevages</h1>
 
+    {% if elevages_actifs is not None and limite is not None %}
+        <div class="alert alert-info d-flex justify-content-between align-items-center" role="alert">
+            <span>
+            Élevages actifs : <strong>{{ elevages_actifs }}</strong> / <strong>{{ limite }}</strong>
+            </span>
+            {% if elevages_actifs >= limite and not request.user.is_superuser %}
+            <span class="text-danger">Limite atteinte</span>
+            {% endif %}
+        </div>
+    {% endif %}
+
+
     <!-- Barre de recherche -->
     <form method="get" class="input-group mb-4">
         <input type="text" name="q" class="form-control" placeholder="Rechercher un joueur..." value="{{ query }}">
@@ -16,21 +28,24 @@
     <ul class="list-group">
         {% for elevage in elevages %}
             <a href="{% url 'detail_elevage' elevage.id %}" class="list-group-item list-group-item-action">
-                👤 <strong>{{ elevage.nom_joueur }}</strong> —
-                🐇 M/F : {{ elevage.nombre_males }}/{{ elevage.nombre_femelles }} |
+                👤 <strong>{{ elevage.nom_joueur }}</strong>
+                {% if request.user.is_superuser %}
+                    <small class="text-muted">(utilisateur : {{ elevage.utilisateur.username }})</small>
+                {% endif %}
+                — 🐇 M/F : {{ elevage.nombre_males }}/{{ elevage.nombre_femelles }} |
                 🍽 {{ elevage.quantite_nourriture }}g |
                 🏠 {{ elevage.nombre_cages }} cages |
                 💰 {{ elevage.argent }} € |
                 {% if elevage.fin_du_jeu %}
-                <span class="badge bg-danger">Terminé</span>
+                    <span class="badge bg-danger">Terminé</span>
                 {% else %}
-                <span class="badge bg-success">En cours</span>
+                    <span class="badge bg-success">En cours</span>
                 {% endif %}
             </a>
         {% empty %}
             <li class="list-group-item text-muted">Aucun élevage enregistré pour le moment.</li>
         {% endfor %}
-    </ul>
+    </ul>    
 </div>
 {% endblock %}
 

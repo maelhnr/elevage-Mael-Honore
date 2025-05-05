@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1 class="my-4">Élevage de {{ elevage.nom_joueur }}</h1>
+
+    <div class="card mb-4">
+        <div class="card-body bg-light">
+            <h5 class="card-title">Ressources</h5>
+            <p class="mb-1">Argent: <span class="badge bg-primary">{{ elevage.argent }}€</span></p>
+            <p class="mb-0">Lapins: <span class="badge bg-secondary">{{ individus|length }}</span></p>
+        </div>
+    </div>
+
+    <h2 class="mb-3"><i class="fas fa-clipboard-list"></i> Fiches des lapins</h2>
+
+    <div class="row">
+        {% for individu in individus %}
+        <div class="col-lg-6 mb-3">
+            <div class="card {% if individu.sante.malade %}border-danger{% elif individu.sante.niveau_sante < 50 %}border-warning{% endif %}">
+                <div class="card-header 
+                    {% if individu.sante.malade %}
+                        bg-danger text-white
+                    {% elif individu.sante.niveau_sante < 50 %}
+                        bg-warning text-dark
+                    {% else %}
+                        bg-success text-white
+                    {% endif %}">
+                    Lapin #{{ individu.id }}
+                    <span class="float-end">
+                        Santé: {{ individu.sante.niveau_sante }}%
+                        {% if individu.etat == 'G' %}
+                            <i class="fas fa-venus ms-2" title="Gravide"></i>
+                        {% endif %}
+                        {% if individu.sante.vacciné %}
+                            <i class="fas fa-shield-alt ms-2" title="Vacciné"></i>
+                        {% endif %}
+                    </span>
+                </div>
+                
+                <div class="card-body">
+                    {% if individu.sante.malade %}
+                        <div class="alert alert-danger mb-3">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Ce lapin est en danger de mort !
+                        </div>
+                    {% elif individu.sante.niveau_sante < 50 %}
+                        <div class="alert alert-warning mb-3">
+                            <i class="fas fa-exclamation-circle"></i>
+                            Ce lapin est en mauvaise santé.
+                        </div>
+                    {% else %}
+                        <div class="alert alert-success mb-0">
+                            <i class="fas fa-check-circle"></i> Ce lapin est en bonne santé
+                        </div>
+                    {% endif %}
+
+                    <!-- Formulaire de vaccination -->
+                    {% if not individu.sante.vacciné %}
+                        <form method="post" class="mb-3">
+                            {% csrf_token %}
+                            <input type="hidden" name="lapin_id" value="{{ individu.id }}">
+                            <input type="hidden" name="action" value="vacciner">
+                            <button type="submit" class="btn btn-info w-100">
+                                <i class="fas fa-syringe"></i> Vacciner (120€)
+                            </button>
+                            <small class="text-muted">La vaccination réduit les risques de maladie</small>
+                        </form>
+                    {% endif %}
+
+                    {% if individu.sante.malade or individu.sante.niveau_sante < 100 %}
+                        <form method="post" class="needs-validation" novalidate>
+                            {% csrf_token %}
+                            <input type="hidden" name="lapin_id" value="{{ individu.id }}">
+                            
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="action" id="total{{ individu.id }}" value="total" required
+                                           {% if individu.sante.niveau_sante > 50 %}checked{% endif %}>
+                                    <label class="form-check-label" for="total{{ individu.id }}">
+                                        <i class="fas fa-medal"></i> Soin complet (10€) - Santé à 100%
+                                    </label>
+                                </div>
+                                
+                                {% if individu.sante.niveau_sante <= 50 %}
+                                <div class="form-check mt-2">
+                                    <input class="form-check-input" type="radio" name="action" id="partiel{{ individu.id }}" value="partiel"
+                                           checked>
+                                    <label class="form-check-label" for="partiel{{ individu.id }}">
+                                        <i class="fas fa-band-aid"></i> Soin d'urgence (5€) +50% santé
+                                    </label>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="fas fa-heartbeat"></i> Appliquer le traitement
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">Aucun lapin dans cet élevage</div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="text-center mt-5">
+        <a href="{% url 'detail_elevage' elevage.id %}" class="btn btn-lg btn-secondary">
+            ← Revenir à l'élevage
+        </a>
+    </div>
+</div>
+{% endblock %}

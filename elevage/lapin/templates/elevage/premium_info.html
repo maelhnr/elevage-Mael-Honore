@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">🎖 Avantages Premium</h2>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card border-secondary">
+                <div class="card-header bg-secondary text-white">
+                    Compte Basic
+                </div>
+                <div class="card-body">
+                    <ul>
+                        <li>✅ Jusqu'à 3 élevages actifs</li>
+                        <li>✅ Accès aux règles standards</li>
+                        <li>✅ Sauvegarde de la progression</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mt-4 mt-md-0">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    Compte Premium
+                </div>
+                <div class="card-body">
+                    <ul>
+                        <li>🌟 Élevages illimités</li>
+                        <li>🌟 Bonus spéciaux (à définir)</li>
+                        <li>🌟 Statistiques détaillées</li>
+                        <li>🌟 Personnalisation de l’élevage</li>
+                    </ul>
+                    <a href="{% url 'premium_info' %}" class="btn btn-warning mt-3">Devenir Premium</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
