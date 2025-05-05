@@ -76,6 +76,7 @@ def elevage(request, elevage_id):
             prevision_3_tours = elevage.prevision_avec_actions(nourriture_achetee,cages_achetees,vendus_m,vendus_f)
             parametres = elevage.parametres_elevage()
             prevision = elevage.simulation_sans_action()
+            proposition = elevage.propositions_optimisees()
             context = {
                 'elevage': elevage,
                 'individus': individus,
@@ -87,6 +88,7 @@ def elevage(request, elevage_id):
                 'parametres': parametres,
                 'prevision': prevision,
                 'prevision_3_tours': prevision_3_tours,
+                'proposition': proposition
             }
             return render(request, 'elevage/elevage.html', context)
         elif action == "valider":
@@ -118,6 +120,7 @@ def elevage(request, elevage_id):
 
             parametres = elevage.parametres_elevage()
             prevision = elevage.simulation_sans_action()
+            proposition = elevage.propositions_optimisees()
 
             context = {
                 'elevage': elevage,
@@ -129,7 +132,8 @@ def elevage(request, elevage_id):
                 'lapins_vendus_f': vendus_f if form_is_valid else 0,
                 'parametres': parametres,
                 'prevision': prevision,
-                'prevision_3_tours': None  # Pas de prévision ici
+                'prevision_3_tours': None,
+                'proposition': proposition
             }
             return render(request, 'elevage/elevage.html', context)
 
@@ -137,6 +141,7 @@ def elevage(request, elevage_id):
             
             parametres = elevage.parametres_elevage()
             prevision = elevage.simulation_sans_action()
+            proposition = elevage.propositions_optimisees()
 
             context = {
                 'elevage': elevage,
@@ -149,11 +154,13 @@ def elevage(request, elevage_id):
                 'parametres': parametres,
                 'prevision': prevision,
                 'prevision_3_tours': None,
+                'proposition': proposition
             }
             return render(request, 'elevage/elevage.html', context)
     else :
         parametres = elevage.parametres_elevage()
         prevision = elevage.simulation_sans_action()
+        proposition = elevage.propositions_optimisees()
     
         context = {
             'elevage': elevage,
@@ -165,7 +172,8 @@ def elevage(request, elevage_id):
             'lapins_vendus_f': vendus_f if form_is_valid else 0,
             'parametres': parametres,
             'prevision': prevision,
-            'prevision_3_tours': prevision_3_tours if form_is_valid else None
+            'prevision_3_tours': None,
+            'proposition': proposition
 
         }
         return render(request, 'elevage/elevage.html', context)

@@ -284,8 +284,46 @@ class Elevage(models.Model):
                 'argent_apres': round(argent, 2),
                 'concentration_apres': round(concentration, 2),
             })
-        return previsions   
+        return previsions
     
+    def propositions_optimisees(self):
+        regle = Regle.objects.first()
+        nourriture = float(self.quantite_nourriture)
+        cages = self.nombre_cages
+        argent = float(self.argent)
+        individus = [deepcopy(ind) for ind in self.individus.filter(etat__in=['P', 'G'])]    
+        
+        #Nourriture
+        achat_nourriture = 0
+        consommation : float = 0.0
+        for individu in individus:
+            age = individu.age + 1
+            if age == 1 :
+                consommation = consommation + 0.0
+            elif age == 2 :
+                consommation = consommation + float(regle.conso_2_mois)
+            else :
+                consommation = consommation + float(regle.conso_3_mois_et_plus)
+        if consommation > nourriture :
+            achat_nourriture = consommation - nourriture
+        
+        #Cages
+        achat_cages = 0
+        concentration = len(individus)/self.nombre_cages
+        if concentration > regle.seuil_surpopulation :
+            achat_cages = int(len(individus)/regle.seuil_surpopulation) + 1 - self.nombre_cages
+       
+       #Ventes de lapins surpopulation
+        vente_lapins = 0
+        if concentration > regle.seuil_surpopulation :
+            vente_lapins = len(individu) - regle.seuil_surpopulation * self.nombre_cages
+        
+        return {
+        'achat_nourriture': achat_nourriture,
+        'achat_cages': achat_cages,
+        'vente_lapins': vente_lapins,
+        }
+        
 class Individu(models.Model):
     class Sexe(models.TextChoices):
         MALE = 'M', 'Mâle'

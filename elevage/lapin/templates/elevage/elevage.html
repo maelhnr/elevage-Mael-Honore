@@ -102,6 +102,13 @@
     </div>
     {% endif %}
 
+    <h2>Conseil pour le tour suivant</h2>
+    <ul>
+        <li>[Manque de nourriture] Achat de nourriture : {{ proposition.achat_nourriture }}</li>
+        <li>[Surpopulation] Achat de cages : {{ proposition.achat_cages }}</li>
+        <li> [Surpopulation] Vente de lapins : {{ proposition.vente_lapins }}</li>
+    </ul>
+
 {% else %}
     <div class="alert alert-danger">
         <h2>💀 Fin de l'élevage</h2>
