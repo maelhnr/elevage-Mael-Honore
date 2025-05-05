@@ -50,7 +50,7 @@
     <form method="post" class="mb-5">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit" class="btn btn-primary mt-2">Valider le tour</button>
+        <button type="submit" name="action" value="valider" class="btn btn-primary mt-2">Valider le tour</button>
         <button type="submit" name="action" value="prevision" class="btn btn-secondary mt-2">Actualiser prévision</button>
     </form>
 
