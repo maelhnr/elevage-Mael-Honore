@@ -64,6 +64,8 @@
         {{ form.as_p }}
         <button type="submit" name="action" value="valider" class="btn btn-primary mt-2">Valider le tour</button>
         <button type="submit" name="action" value="prevision" class="btn btn-secondary mt-2">Actualiser prévision</button>
+        <!-- Lien vers la page de gestion des soins des lapins -->
+        <a href="{% url 'gestion_lapins' elevage.id %}" class="btn btn-info mt-3">Soigner les lapins</a>
     </form>
 
     <h2>Paramètres caractéristiques élevage</h2>
@@ -130,8 +132,7 @@
         <li> Age moyen des lapins : {{ indicateurs.age_moyen }}</li>
     </ul>
 
-     <!-- Lien vers la page de gestion des soins des lapins -->
-     <a href="{% url 'gestion_lapins' elevage.id %}" class="btn btn-info mt-3">Soigner les lapins</a>
+    
      
 {% else %}
     <div class="alert alert-danger">
