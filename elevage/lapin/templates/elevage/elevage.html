@@ -41,6 +41,18 @@
         {% for individu in individus %}
             <li class="list-group-item">
                 Sexe : {{ individu.get_sexe_display }} | Âge : {{ individu.age }} mois{% if individu.etat == 'G' %} | Gravide{% endif %}
+                <!-- Ajout de la santé pour chaque lapin -->
+                 
+                | Santé : 
+                    {% if individu.sante.niveau_sante < 50 %}
+                        <span style="color: red;">
+                    {% else %}
+                        <span style="color: green;">
+                    {% endif %}
+                        {{ individu.sante.niveau_sante }}%
+                    </span>
+                    | État : {% if individu.sante.malade %}<strong style="color: red;">Malade</strong>{% else %}Sain{% endif %}
+                    | Vacciné : {% if individu.sante.vacciné %}<span style="color: green;">Oui</span>{% else %}<span style="color: red;">Non</span>{% endif %}
             </li>
         {% empty %}
             <li class="list-group-item">Aucun individu dans cet élevage.</li>
@@ -117,6 +129,9 @@
     </script>
       
 
+     <!-- Lien vers la page de gestion des soins des lapins -->
+     <a href="{% url 'gestion_lapins' elevage.id %}" class="btn btn-info mt-3">Soigner les lapins</a>
+     
 {% else %}
     <div class="alert alert-danger">
         <h2>💀 Fin de l'élevage</h2>

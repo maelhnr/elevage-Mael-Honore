@@ -18,5 +18,104 @@
     {{ form.as_p }}
     <button type="submit" class="btn btn-primary">Démarrer la partie</button>
 </form>
+
+<!-- Nouveau bloc : Choix de la difficulté et affichage des probabilités -->
+<div class="mt-5">
+    <h2 style="font-size: 1.5rem;">🎯 Niveau de difficulté</h2>
+
+    <!-- Boutons de sélection -->
+    <div class="form-group mt-3">
+        <button type="button" class="btn btn-outline-success btn-lg mr-3 text-dark" id="difficulte_facile">
+            🍀 Facile
+        </button>
+        <button type="button" class="btn btn-outline-primary btn-lg mr-3 text-dark" id="difficulte_moyen">
+            🌊 Moyen
+        </button>
+        <button type="button" class="btn btn-outline-danger btn-lg mr-3 text-dark" id="difficulte_difficile">
+            🔥 Difficile
+        </button>
+    </div>
+
+    <!-- Probabilités affichées dynamiquement -->
+    <div id="probabilites_sante" style="font-size: 1.2rem; margin-top: 20px;">
+        <p>Proba de tomber malade : <span id="prob_maladie">10%</span></p>
+        <p>Proba de guérison : <span id="prob_guerison">70%</span></p>
+    </div>
+
+    <!-- Champ caché pour envoyer la difficulté au backend -->
+    <input type="hidden" name="difficulte" id="difficulte" value="facile">
+</div>
+
+<!-- Script JavaScript pour gérer l'interaction -->
+<script>
+    const boutonsDifficulte = document.querySelectorAll('[id^="difficulte_"]');
+    const probMaladie = document.getElementById('prob_maladie');
+    const probGuerison = document.getElementById('prob_guerison');
+    const champCacheDifficulte = document.getElementById('difficulte');  
+
+    function resetBoutons() {
+        boutonsDifficulte.forEach(function(button) {
+            button.classList.remove('btn-success', 'btn-primary', 'btn-danger');
+            button.classList.add('btn-outline-success', 'btn-outline-primary', 'btn-outline-danger');
+            button.classList.add('text-dark');
+        });
+    }
+
+    boutonsDifficulte.forEach(function(button) {
+        button.addEventListener('click', function() {
+            resetBoutons();
+
+            if (button.id === 'difficulte_facile') {
+                button.classList.remove('btn-outline-success');
+                button.classList.add('btn-success');
+                champCacheDifficulte.value = 'facile';
+                probMaladie.textContent = '10%';
+                probGuerison.textContent = '70%';
+            } else if (button.id === 'difficulte_moyen') {
+                button.classList.remove('btn-outline-primary');
+                button.classList.add('btn-primary');
+                champCacheDifficulte.value = 'moyen';
+                probMaladie.textContent = '30%';
+                probGuerison.textContent = '50%';
+            } else if (button.id === 'difficulte_difficile') {
+                button.classList.remove('btn-outline-danger');
+                button.classList.add('btn-danger');
+                champCacheDifficulte.value = 'difficile';
+                probMaladie.textContent = '50%';
+                probGuerison.textContent = '30%';
+            }
+        });
+    });
+</script>
+
+<!-- CSS personnalisé pour empêcher les boutons de devenir rouges lors du survol -->
+<style>
+    /* Empêche les boutons faciles et moyens de devenir rouges au survol */
+    .btn-outline-success:hover {
+        border-color: #28a745 !important;
+        color: #28a745 !important;
+        background-color: transparent !important;
+    }
+
+    .btn-outline-primary:hover {
+        border-color: #007bff !important;
+        color: #007bff !important;
+        background-color: transparent !important;
+    }
+
+    .btn-outline-danger:hover {
+        border-color: #dc3545 !important;
+        color: #dc3545 !important;
+        background-color: transparent !important;
+    }
+
+    /* Garde la police des boutons en noir */
+    .btn-outline-success, .btn-outline-primary, .btn-outline-danger {
+        color: black !important;
+    }
+</style>
+
+
 {% endblock %}
+
 
