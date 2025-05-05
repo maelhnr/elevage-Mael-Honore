@@ -168,7 +168,7 @@ class Elevage(models.Model):
                 morts_faim += 1
         
         # Surpopulation
-        vivants = individus.filter(etat__in=['P', 'G'])
+        vivants = individus.filter(etat__in=['P', 'G'],age__gte=3)
         if len(vivants) > nombre_cages * regle.seuil_surpopulation:
             morts_maladie = int( len(vivants)*0.3 )
         
@@ -240,7 +240,7 @@ class Elevage(models.Model):
                     ind.etat = 'M'
                     morts_faim += 1
                     
-            vivants = [ind for ind in individus if ind.etat in ['P', 'G']]
+            vivants_adulte = [ind for ind in individus if ind.etat in ['P', 'G'] and ind.age>=3]
             if len(vivants) > cages * regle.seuil_surpopulation:
                 nb_surplus = int(len(vivants) * 0.30)
                 for ind in vivants[:nb_surplus]:
@@ -316,7 +316,7 @@ class Elevage(models.Model):
        #Ventes de lapins surpopulation
         vente_lapins = 0
         if concentration > regle.seuil_surpopulation :
-            vente_lapins = len(individu) - regle.seuil_surpopulation * self.nombre_cages
+            vente_lapins = len(individus) - regle.seuil_surpopulation * self.nombre_cages
         
         return {
         'achat_nourriture': achat_nourriture,
