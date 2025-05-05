@@ -1,5 +1,7 @@
 from django import forms
 from .models import Elevage
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
 
 from django import forms
 from .models import Elevage
@@ -46,4 +48,14 @@ class SoignerLapinForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['action'].widget.attrs.update({'class': 'form-check-input'})
+
+
+class SignUpForm(UserCreationForm):
+    email = forms.EmailField(required=True, help_text="Requis. Entrez une adresse valide.")
+    first_name = forms.CharField(max_length=30, required=True, label="Prénom")
+    last_name = forms.CharField(max_length=30, required=True, label="Nom")
+
+    class Meta:
+        model = User
+        fields = ('username', 'first_name', 'last_name', 'email', 'password1', 'password2')
 

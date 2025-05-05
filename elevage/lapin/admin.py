@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Elevage, Individu, Regle
+from .models import Elevage, Individu, Regle, Client
 
 @admin.register(Elevage)
 class ElevageAdmin(admin.ModelAdmin):
@@ -29,5 +29,10 @@ class RegleAdmin(admin.ModelAdmin):
     )
 
     search_fields = ('prix_nourriture', 'prix_cage', 'prix_vente_lapin')
+    
+@admin.register(Client)
+class ClientAdmin(admin.ModelAdmin):
+    list_display = ('user', 'is_premium')
+    search_fields = ('user__username',)
     
 
