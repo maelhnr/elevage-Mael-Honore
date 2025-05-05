@@ -77,6 +77,7 @@ def elevage(request, elevage_id):
             parametres = elevage.parametres_elevage()
             prevision = elevage.simulation_sans_action()
             proposition = elevage.propositions_optimisees()
+            indicateurs = elevage.indicateurs_cles()
             context = {
                 'elevage': elevage,
                 'individus': individus,
@@ -88,7 +89,8 @@ def elevage(request, elevage_id):
                 'parametres': parametres,
                 'prevision': prevision,
                 'prevision_3_tours': prevision_3_tours,
-                'proposition': proposition
+                'proposition': proposition,
+                'indicateurs': indicateurs,
             }
             return render(request, 'elevage/elevage.html', context)
         elif action == "valider":
@@ -121,7 +123,8 @@ def elevage(request, elevage_id):
             parametres = elevage.parametres_elevage()
             prevision = elevage.simulation_sans_action()
             proposition = elevage.propositions_optimisees()
-
+            indicateurs = elevage.indicateurs_cles()
+            
             context = {
                 'elevage': elevage,
                 'individus': individus,
@@ -133,7 +136,8 @@ def elevage(request, elevage_id):
                 'parametres': parametres,
                 'prevision': prevision,
                 'prevision_3_tours': None,
-                'proposition': proposition
+                'proposition': proposition,
+                'indicateurs': indicateurs,
             }
             return render(request, 'elevage/elevage.html', context)
 
@@ -142,7 +146,8 @@ def elevage(request, elevage_id):
             parametres = elevage.parametres_elevage()
             prevision = elevage.simulation_sans_action()
             proposition = elevage.propositions_optimisees()
-
+            indicateurs = elevage.indicateurs_cles()
+            
             context = {
                 'elevage': elevage,
                 'individus': individus,
@@ -154,14 +159,16 @@ def elevage(request, elevage_id):
                 'parametres': parametres,
                 'prevision': prevision,
                 'prevision_3_tours': None,
-                'proposition': proposition
+                'proposition': proposition,
+                'indicateurs': indicateurs,
             }
             return render(request, 'elevage/elevage.html', context)
     else :
         parametres = elevage.parametres_elevage()
         prevision = elevage.simulation_sans_action()
         proposition = elevage.propositions_optimisees()
-    
+        indicateurs = elevage.indicateurs_cles()
+        
         context = {
             'elevage': elevage,
             'individus': individus,
@@ -173,7 +180,8 @@ def elevage(request, elevage_id):
             'parametres': parametres,
             'prevision': prevision,
             'prevision_3_tours': None,
-            'proposition': proposition
+            'proposition': proposition,
+            'indicateurs': indicateurs,
 
         }
         return render(request, 'elevage/elevage.html', context)

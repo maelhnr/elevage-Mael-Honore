@@ -1,7 +1,7 @@
 from copy import deepcopy
 from django.db import models
 from random import randint, choice
-
+from datetime import timedelta
 
 class Elevage(models.Model):
     nom_joueur = models.CharField(max_length=100)
@@ -323,6 +323,44 @@ class Elevage(models.Model):
         'achat_cages': achat_cages,
         'vente_lapins': vente_lapins,
         }
+        
+    def indicateurs_cles(self):
+        regle = Regle.objects.first()
+
+        present = [deepcopy(ind) for ind in self.individus.filter(etat__in=['P'])]
+        gravide = [deepcopy(ind) for ind in self.individus.filter(etat__in=['G'])]
+        mort = [deepcopy(ind) for ind in self.individus.filter(etat__in=['M'])]
+        vendu = [deepcopy(ind) for ind in self.individus.filter(etat__in=['V'])]
+        
+        #taille de l'elevage
+        taille = len(present) + len(gravide)
+        #taux de mortalite
+        taux_mortalite = len(mort) / (len(present) + len(gravide) + len(mort) + len(vendu))    
+        #taux de vente
+        taux_vente = len(vendu) / (len(present) + len(gravide) + len(mort) + len(vendu))    
+        #taux de natalite
+        #Moyenne age
+        age_moyen = 0
+        if (len(present) + len(gravide)) > 0:
+            age_moyen = sum([ind.age for ind in present] + [ind.age for ind in gravide]) / (len(present) + len(gravide))
+        else:
+            age_moyen = 0
+        #Occupation cages
+        occupation = 0
+        nb_cages = self.nombre_cages
+        capacite = nb_cages * regle.seuil_surpopulation
+        if nb_cages > 0 :
+            occupation = taille / capacite
+        else :
+            occupation = 0
+        return {
+        'taille': taille,
+        'taux_mortalite': taux_mortalite,
+        'taux_vente': taux_vente,
+        'age_moyen':age_moyen,
+        'occupation': occupation,        
+        }
+
         
 class Individu(models.Model):
     class Sexe(models.TextChoices):

@@ -109,6 +109,15 @@
         <li> [Surpopulation] Vente de lapins : {{ proposition.vente_lapins }}</li>
     </ul>
 
+    <h2>Indicateurs clés de l'élevage</h2>
+    <ul>
+        <li>Taille de l'élevage : {{ indicateurs.taille }}</li>
+        <li> Taux de mortalité : {{ indicateurs.taux_mortalite }}</li>
+        <li> Taux de vente : {{ indicateurs.taux_vente }}</li>
+        <li> Taux d'occupation des cages : {{ indicateurs.occupation }}</li>
+        <li> Age moyen des lapins : {{ indicateurs.age_moyen }}</li>
+    </ul>
+
 {% else %}
     <div class="alert alert-danger">
         <h2>💀 Fin de l'élevage</h2>
