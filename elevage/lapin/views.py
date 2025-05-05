@@ -155,13 +155,14 @@ def menu(request):
 def regles_jeu(request):
     return render(request, 'elevage/regles.html')
 
+
 def gestion_lapins(request, elevage_id):
     elevage = get_object_or_404(Elevage, id=elevage_id)
     individus = Individu.objects.filter(
         elevage=elevage,
         etat__in=['P', 'G'],
         sante__vivant=True
-    ).select_related('sante')  # Pas de changement nécessaire
+    ).select_related('sante')
     
     if request.method == 'POST':
         lapin_id = request.POST.get('lapin_id')
@@ -170,8 +171,19 @@ def gestion_lapins(request, elevage_id):
         if lapin_id and action:
             lapin = get_object_or_404(Individu, id=lapin_id, elevage=elevage)
             
-            # Condition de soin - accès via lapin.sante comme avant
-            if lapin.sante.malade or lapin.sante.niveau_sante <= 0:
+            # Nouveau cas: vaccination
+            if action == 'vacciner':
+                if not lapin.sante.vacciné:
+                    if elevage.argent >= 120:
+                        lapin.sante.vacciné = True
+                        elevage.argent -= 120
+                        lapin.sante.save()
+                        elevage.save()
+
+                return redirect('gestion_lapins', elevage_id=elevage.id)
+            
+            # Ancienne logique de soin
+            if action in ['total', 'partiel'] and (lapin.sante.malade or lapin.sante.niveau_sante <= 0):
                 cout = 10 if action == 'total' else 5
                 
                 if elevage.argent >= cout:
@@ -190,8 +202,8 @@ def gestion_lapins(request, elevage_id):
     return render(request, 'elevage/gestion_lapins.html', {
         'elevage': elevage,
         'individus': individus,
+        'prix_vaccination': 120,
     })
-
 
 def signup_view(request):
     if request.method == 'POST':

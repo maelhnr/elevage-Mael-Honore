@@ -37,6 +37,7 @@ class SoignerLapinForm(forms.Form):
     ACTION_CHOICES = [
         ('total', '🔴 Soin Total - 10€ (Santé à 100%)'),
         ('partiel', '🟡 Soin Partiel - 5€ (+50% santé)'),
+        ('vacciner', '💉 Vaccination - 120€ (Protection contre les maladies)'),
     ]
     
     action = forms.ChoiceField(
@@ -45,10 +46,16 @@ class SoignerLapinForm(forms.Form):
         label="Type de soin"
     )
     
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, individu=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['action'].widget.attrs.update({'class': 'form-check-input'})
-
+        
+        # Si un individu est passé et qu'il est déjà vacciné, on retire l'option vaccination
+        if individu and individu.sante.vacciné:
+            self.fields['action'].choices = [
+                choice for choice in self.ACTION_CHOICES 
+                if choice[0] != 'vacciner'
+            ]
 
 class SignUpForm(UserCreationForm):
     email = forms.EmailField(required=True, help_text="Requis. Entrez une adresse valide.")

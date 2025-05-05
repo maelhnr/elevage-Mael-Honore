@@ -175,7 +175,7 @@ class Individu(models.Model):
         created = not self.pk  # Vérifie si c'est une nouvelle instance
         super().save(*args, **kwargs)
         if created:  # Si nouvel individu, créez sa santé
-            Sante.objects.create(individu=self, malade=False, niveau_sante=100)
+            Sante.objects.create(individu=self,vacciné = False, malade=False, niveau_sante=100)
             
     def __str__(self):
         return f"{self.get_sexe_display()} - {self.age} mois - {self.get_etat_display()}"
@@ -222,6 +222,7 @@ def save_user_profile(sender, instance, **kwargs):
     instance.client.save()
 
 class Sante(models.Model):
+    vacciné = models.BooleanField(default=False)
     # On va faire tober le lapin malade
     malade = models.BooleanField(default=False)
     individu = models.OneToOneField('Individu', on_delete=models.CASCADE, related_name='sante', null=False)
@@ -275,12 +276,20 @@ class Sante(models.Model):
         individus_vivants = elevage.individus.filter(etat__in=['P', 'G'])
         nb_individus = individus_vivants.count()
         densite = nb_individus / elevage.nombre_cages if elevage.nombre_cages > 0 else nb_individus
-
-        # Risques et chances basées sur la densité
-        risque_maladie = max(0, (densite - regle.nb_max_individus_par_cage) * 15 )  
-        # + 15% par lapin en trop dans l'elevage
-        chance_guerison = max(0, (regle.nb_max_individus_par_cage - densite) * 15)  
-        # + 5% Chance de guérison par place liberée dans l'elevage
+        
+        # Si le lapin est vacciné, il aura moins de chances de tomber malade
+        if self.vacciné == False : # Non vacciné guerison_base = 0 et malade_base = 40
+            # Risques et chances basées sur la densité
+            risque_maladie = max(0, (densite - regle.nb_max_individus_par_cage) * 15 )  
+            # + 15% par lapin en trop dans l'elevage
+            chance_guerison = max(0, (regle.nb_max_individus_par_cage - densite) * 15)  
+            # + 5% Chance de guérison par place liberée dans l'elevage
+        elif self.vacciné == True : # Non vacciné guerison_base = 40 et malade_base = 10
+            # Risques et chances basées sur la densité
+            risque_maladie = max(10, (densite - regle.nb_max_individus_par_cage) * 15 )  
+            # + 15% par lapin en trop dans l'elevage
+            chance_guerison = max(40, (regle.nb_max_individus_par_cage - densite) * 15)  
+            # + 5% Chance de guérison par place liberée dans l'elevage
         
         # 1 seul jour pour survivre une fois malade plus d'1mois
         if self.malade == True : 

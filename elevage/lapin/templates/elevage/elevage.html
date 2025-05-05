@@ -51,7 +51,7 @@
                         {{ individu.sante.niveau_sante }}%
                     </span>
                     | État : {% if individu.sante.malade %}<strong style="color: red;">Malade</strong>{% else %}Sain{% endif %}
-
+                    | Vacciné : {% if individu.sante.vacciné %}<span style="color: green;">Oui</span>{% else %}<span style="color: red;">Non</span>{% endif %}
             </li>
         {% empty %}
             <li class="list-group-item">Aucun individu dans cet élevage.</li>
@@ -85,4 +85,3 @@
 {% endif %}
 
 {% endblock %}
-
