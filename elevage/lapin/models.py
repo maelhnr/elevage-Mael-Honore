@@ -16,6 +16,7 @@ class Elevage(models.Model):
     tour = models.PositiveIntegerField(default=0)
     fin_du_jeu = models.BooleanField(default=False)
     utilisateur = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    a_ajoute_ressources_tour = models.IntegerField(null=True, blank=True)
 
 
 
@@ -23,6 +24,7 @@ class Elevage(models.Model):
         return f"Élevage de {self.nom_joueur} - Créé le {self.date_creation.strftime('%d/%m/%Y')}"
     
     def jouer_tour(self, nourriture_achetee, cages_achetees, vendus_m, vendus_f):
+       
         regle = Regle.objects.first()  # On suppose qu'il n'y en a qu'une
         self.tour += 1
         self.save()

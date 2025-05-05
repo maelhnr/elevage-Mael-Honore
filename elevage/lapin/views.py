@@ -1,6 +1,6 @@
 from django.http import HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
-from .forms import ElevageForm, Actions, SignUpForm
+from .forms import ElevageForm, Actions, SignUpForm, RessourcesBonusForm
 from .models import Elevage, Individu, Regle
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login
@@ -85,8 +85,28 @@ def liste(request):
 @login_required
 def elevage(request, elevage_id):
     elevage = get_object_or_404(Elevage, id=elevage_id)
-    if elevage.utilisateur != request.user and not request.user.is_superuser: # sécurité accès élevage
-        return HttpResponseForbidden("Vous n'avez pas accès à cet élevage.")
+    if elevage.utilisateur != request.user and not request.user.is_superuser:
+        return HttpResponseForbidden("Accès refusé.")
+
+    # Initialisation du formulaire si premium et bonus pas encore utilisé
+    form_bonus = None
+    if hasattr(request.user, 'client') and request.user.client.is_premium:
+        form_bonus = RessourcesBonusForm(request.POST or None)
+
+        if request.method == 'POST' and 'bonus_submit' in request.POST:
+            if elevage.a_ajoute_ressources_tour != elevage.tour:
+                if form_bonus.is_valid():
+                    bonus = form_bonus.cleaned_data['type_bonus']
+                    if bonus == 'nourriture':
+                        elevage.quantite_nourriture += 20000
+                    elif bonus == 'cages':
+                        elevage.nombre_cages += 1
+                    elif bonus == 'argent':
+                        elevage.argent += 500
+                    elevage.a_ajoute_ressources_tour = elevage.tour
+                    elevage.save()
+                    return redirect('detail_elevage', elevage_id=elevage.id)
+
     individus = Individu.objects.filter(
     elevage=elevage,
     etat__in=['P', 'G'] 
@@ -144,6 +164,7 @@ def elevage(request, elevage_id):
         'fin_du_jeu': elevage.fin_du_jeu,
         'lapins_vendus_m': vendus_m if form_is_valid else 0,
         'lapins_vendus_f': vendus_f if form_is_valid else 0,
+        'form_bonus': form_bonus,
     }
     return render(request, 'elevage/elevage.html', context)
 

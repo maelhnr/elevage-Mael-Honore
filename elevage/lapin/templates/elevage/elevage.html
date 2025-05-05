@@ -13,6 +13,18 @@
     </p>
 </div>
 
+{% if user.client.is_premium and elevage.a_ajoute_ressources_tour != elevage.tour and not fin_du_jeu %}
+  <h4>🎁 Bonus Premium</h4>
+  <form method="post">
+    {% csrf_token %}
+    {{ form_bonus.as_p }}
+    <button type="submit" name="bonus_submit" class="btn btn-success">Valider le bonus</button>
+  </form>
+{% elif user.client.is_premium and elevage.a_ajoute_ressources_tour == elevage.tour and not fin_du_jeu %}
+  <p><em>✅ Bonus déjà utilisé ce tour.</em></p>
+{% endif %}
+
+
 {% if resultats_tour %}
     <div class="alert alert-info">
         <h2>Résumé du tour</h2>

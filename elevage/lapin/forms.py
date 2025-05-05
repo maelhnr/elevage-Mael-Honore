@@ -37,4 +37,17 @@ class SignUpForm(UserCreationForm):
     class Meta:
         model = User
         fields = ('username', 'first_name', 'last_name', 'email', 'password1', 'password2')
+        
+class RessourcesBonusForm(forms.Form):
+    RESSOURCES_CHOICES = [
+        ('nourriture', '🍽 +20 000g de nourriture'),
+        ('cages', '🏠 +1 cage'),
+        ('argent', '💰 +500 €'),
+    ]
+    type_bonus = forms.ChoiceField(
+        choices=RESSOURCES_CHOICES,
+        widget=forms.RadioSelect,
+        label="Choisissez un bonus (1 par tour)",
+        required=False  # Permet de ne rien choisir
+    )
 
