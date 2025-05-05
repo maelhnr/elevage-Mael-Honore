@@ -475,24 +475,24 @@ class Sante(models.Model):
     # S'il a déja été malade le mois dernier, il devra mourir
     vivant = models.BooleanField(default=True)
     
-    def is_guerir(self):
+    def guerir(self):
         self.niveau_sante = 100
         self.malade = False
         self.save()  
         
-    def is_malade(self):
+    def rendre_malade(self):
         self.niveau_sante = 0
         self.malade = True
         self.save()  
         
-    def is_falling(self):
+    def rendre_aggrave(self):
         if self.niveau_sante >= 20 :
             self.niveau_sante -= 20
         else :
             self.niveau_sante = 0
         self.save()  
     
-    def is_recovering(self):
+    def soigner(self):
         if self.niveau_sante <= 80 :
             self.niveau_sante += 20
         else :
@@ -541,18 +541,18 @@ class Sante(models.Model):
             
         # Tomber malade selon son niveau de santé
         if randint(1, 100) >= int(self.niveau_sante): 
-            self.is_malade()
+            self.rendre_malade()
 
         # Application des probabilités
         if randint(1, 100) <= int(chance_guerison):  # Probabilité de guérison
-            self.is_recovering()
+            self.soigner()
             if randint(1, 100) <= int(prob_guerison * 100):  # Guérison basée sur la difficulté
-                self.is_guerir()
+                self.guerir()
 
         if randint(1, 100) <= int(risque_maladie * 100):  # Probabilité de maladie
-            self.is_falling()
+            self.rendre_aggrave()
             if randint(1, 100) <= int(prob_maladie * 100):  # Maladie basée sur la difficulté
-                self.is_malade()
+                self.rendre_malade()
 
 
         
