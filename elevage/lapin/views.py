@@ -61,7 +61,7 @@ def elevage(request, elevage_id):
     
     vendus_m = 0
     vendus_f = 0
-    
+   
     if elevage.fin_du_jeu:
         form = None
 
@@ -114,7 +114,8 @@ def elevage(request, elevage_id):
         'lapins_vendus_m': vendus_m if form_is_valid else 0,
         'lapins_vendus_f': vendus_f if form_is_valid else 0,
         'parametres': parametres,
-        'prevision': prevision
+        'prevision': prevision,
+        'prevision_3_tours':prevision_3_tours if form_is_valid else None
 
     }
     return render(request, 'elevage/elevage.html', context)
@@ -125,4 +126,3 @@ def menu(request):
 
 def regles_jeu(request):
     return render(request, 'elevage/regles.html')
-

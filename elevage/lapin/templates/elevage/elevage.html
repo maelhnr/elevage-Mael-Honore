@@ -51,6 +51,7 @@
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit" class="btn btn-primary mt-2">Valider le tour</button>
+        <button type="submit" name="action" value="prevision" class="btn btn-secondary mt-2">Actualiser prévision</button>
     </form>
 
     <h2>Paramètres caractéristiques élevage</h2>
@@ -60,7 +61,7 @@
  
     </ul>
 
-    <h2>Prévision si vous ne faites rien</h2>
+    <h2>Prévisions si vous ne faites rien (Estimations)</h2>
     <ul>
         <li>Naissances : {{ prevision.naissances }}</li>
         <li> Morts par faim : {{ prevision.morts_faim }}</li>
@@ -68,6 +69,39 @@
         <li> Lapins vivants après : {{ prevision.total_vivants_apres }}</li>
         <li> Nourriture restante : {{ prevision.nourriture_restante }} g</li>
     </ul>
+
+    {% if prevision_3_tours %}
+    <div class="mt-4">
+        <h2>Prévisions sur 3 tours avec vos choix actuels</h2>
+        <table border="1" class="table">
+            <thead>
+                <tr>
+                    <th>Tour</th>
+                    <th>Lapins Vivants</th>
+                    <th>Nourriture Restante</th>
+                    <th>Argent (€)</th>
+                    <th>Naissances</th>
+                    <th>Morts par Faim</th>
+                    <th>Morts par Maladie</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tour in prevision_3_tours %}
+                    <tr>
+                        <td>Tour {{ elevage.tour|add:forloop.counter }}</td>
+                        <td>{{ tour.vivants_apres }}</td>
+                        <td>{{ tour.nourriture_restante }}g</td>
+                        <td>{{ tour.argent_apres }} €</td>
+                        <td>{{ tour.naissances }}</td>
+                        <td>{{ tour.morts_faim }}</td>
+                        <td>{{ tour.morts_maladie }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
 {% else %}
     <div class="alert alert-danger">
         <h2>💀 Fin de l'élevage</h2>
