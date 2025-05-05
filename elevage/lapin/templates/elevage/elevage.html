@@ -4,6 +4,7 @@
 
 {% block content %}
 
+
 <div class="mb-4">
     <h1>Élevage de {{ elevage.nom_joueur }} - Tour n°{{ elevage.tour }}</h1>
     <p>
@@ -52,6 +53,70 @@
         {{ form.as_p }}
         <button type="submit" class="btn btn-primary mt-2">Valider le tour</button>
     </form>
+
+    <button onclick="toggleGraph()">Evolution de la population</button>
+
+    <div id="chart-container" style="display: none;">
+        <canvas id="myChart"></canvas>
+    </div>
+      
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+        function toggleGraph() {
+            const container = document.getElementById('chart-container');
+            container.style.display = container.style.display === 'none' ? 'block' : 'none';
+        }
+    </script>
+
+    <script>
+        var data = {{ data | safe }}
+        const ctx = document.getElementById('myChart');
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.map(i=> 'Tour ' + i.fields.numero),
+                datasets: [{
+                    label: 'Femelles',
+                    data: data.map(i=>i.fields.nb_femelles_adultes),
+                    borderColor: 'rgb(99, 255, 154)',
+                    backgroundColor: 'rgba(99, 255, 146, 0.2)',
+                },
+                {
+                    label: 'Mâles',
+                    data: data.map(i=>i.fields.nb_males_adultes),
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                },
+                {
+                    label: 'Lapereaux',
+                    data: data.map(i=>i.fields.nb_lapereaux),
+                    borderColor: 'rgba(255, 206, 86, 1)',
+                    backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0 // évite les décimales
+                        }
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Population par catégorie'
+                    }
+                }
+            }
+        });
+    </script>
+      
+
 {% else %}
     <div class="alert alert-danger">
         <h2>💀 Fin de l'élevage</h2>
