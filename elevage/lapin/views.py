@@ -46,7 +46,20 @@ def nouveau(request):
                     age=0,
                     etat='P',  # Présent
                 )
-                
+            individus = Individu.objects.filter(elevage=elevage,etat__in=['P', 'G'] )
+            
+            nb_femelles_adultes = individus.filter(sexe='F', age__gte = 3).count()
+            nb_males_adultes = individus.filter(sexe='M', age__gte = 3).count()
+            nb_lapereaux = individus.filter(age__in = [0,2]).count()
+            
+            Tour.objects.create(
+            elevage = elevage,
+            numero =  1,
+            nb_femelles_adultes = nb_femelles_adultes,
+            nb_males_adultes = nb_males_adultes,
+            nb_lapereaux = nb_lapereaux
+        )  
+              
             return redirect('detail_elevage', elevage_id=elevage.id)
     else:
         form = ElevageForm()
@@ -99,14 +112,12 @@ def elevage(request, elevage_id):
     resultats_tour = None
     form_is_valid = request.method == "POST" and form.is_valid()
     
-    data_exists = False
-    empty_data = {
-                "labels": [],
-                "nb_femelles_adultes": [],
-                "nb_males_adultes": [],
-                "nb_lapereaux": []
-        }
-    
+    data = Tour.objects.filter(elevage=elevage).order_by('numero')
+    data_exists = data.exists()
+    if data_exists:
+        serialized_data = serializers.serialize("json", data)
+    else:
+        serialized_data = "[]"
     numero = elevage.tour
     ## graphe initial 
     
@@ -180,16 +191,6 @@ def elevage(request, elevage_id):
             nb_males_adultes = nb_males_adultes,
             nb_lapereaux = nb_lapereaux
         )
-
-        data = Tour.objects.filter(elevage = elevage).order_by('numero')  # Chronologique
-        
-        if data.exists(): 
-            data_exists = True
-            serialized_data = serializers.serialize("json", data)
-        else:
-            data_exists = True
-            serialized_data = serializers.serialize("json", empty_data)
-
     context = {
         'elevage': elevage,
         'individus': individus,
