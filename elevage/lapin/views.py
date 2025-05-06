@@ -247,6 +247,7 @@ def elevage(request, elevage_id):
                 'proposition': proposition,
                 'indicateurs': indicateurs,
                 'data': serialized_data,
+                'form_bonus': form_bonus,
 
             }
             return render(request, 'elevage/elevage.html', context)
@@ -272,6 +273,7 @@ def elevage(request, elevage_id):
                 'proposition': proposition,
                 'indicateurs': indicateurs,
                 'data': serialized_data,
+                'form_bonus': form_bonus,
             }
             return render(request, 'elevage/elevage.html', context)
         
@@ -296,6 +298,7 @@ def elevage(request, elevage_id):
             'proposition': proposition,
             'indicateurs': indicateurs,
             'data': serialized_data,
+            'form_bonus': form_bonus,
         }
         return render(request, 'elevage/elevage.html', context)
 
