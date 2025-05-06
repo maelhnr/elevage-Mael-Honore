@@ -63,7 +63,10 @@
     <form method="post" class="mb-5">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit" class="btn btn-primary mt-2">Valider le tour</button>
+        <button type="submit" name="action" value="valider" class="btn btn-primary mt-2">Valider le tour</button>
+        <button type="submit" name="action" value="prevision" class="btn btn-secondary mt-2">Actualiser prévision</button>
+        <!-- Lien vers la page de gestion des soins des lapins -->
+        <a href="{% url 'gestion_lapins' elevage.id %}" class="btn btn-info mt-3">Soigner les lapins</a>
     </form>
 
     <button onclick="toggleGraph()">Evolution de la population</button>
@@ -131,6 +134,71 @@
 
      <!-- Lien vers la page de gestion des soins des lapins -->
      <a href="{% url 'gestion_lapins' elevage.id %}" class="btn btn-info mt-3">Soigner les lapins</a>
+    <h2>Paramètres caractéristiques élevage</h2>
+    <ul>
+        <li>Consommation de l'élevage : {{ parametres.consommation }}g chaque mois</li>
+        <li>Concentration : {{ parametres.concentration }} lapins par cage</li>
+ 
+    </ul>
+
+    <h2>Prévisions si vous ne faites rien (Estimations)</h2>
+    <ul>
+        <li>Naissances : {{ prevision.naissances }}</li>
+        <li> Morts par faim : {{ prevision.morts_faim }}</li>
+        <li> Morts maladie : {{ prevision.morts_maladie }}</li>
+        <li> Lapins vivants après : {{ prevision.total_vivants_apres }}</li>
+        <li> Nourriture restante : {{ prevision.nourriture_restante }} g</li>
+    </ul>
+
+    {% if prevision_3_tours %}
+    <div class="mt-4">
+        <h2>Prévisions sur 3 tours avec vos choix actuels</h2>
+        <table border="1" class="table">
+            <thead>
+                <tr>
+                    <th>Tour</th>
+                    <th>Lapins Vivants</th>
+                    <th>Nourriture Restante</th>
+                    <th>Argent (€)</th>
+                    <th>Naissances</th>
+                    <th>Morts par Faim</th>
+                    <th>Morts par Maladie</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tour in prevision_3_tours %}
+                    <tr>
+                        <td>Tour {{ elevage.tour|add:forloop.counter }}</td>
+                        <td>{{ tour.vivants_apres }}</td>
+                        <td>{{ tour.nourriture_restante }}g</td>
+                        <td>{{ tour.argent_apres }} €</td>
+                        <td>{{ tour.naissances }}</td>
+                        <td>{{ tour.morts_faim }}</td>
+                        <td>{{ tour.morts_maladie }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <h2>Conseil pour le tour suivant</h2>
+    <ul>
+        <li>[Manque de nourriture] Achat de nourriture : {{ proposition.achat_nourriture }}</li>
+        <li>[Surpopulation] Achat de cages : {{ proposition.achat_cages }}</li>
+        <li> [Surpopulation] Vente de lapins : {{ proposition.vente_lapins }}</li>
+    </ul>
+
+    <h2>Indicateurs clés de l'élevage</h2>
+    <ul>
+        <li>Taille de l'élevage : {{ indicateurs.taille }}</li>
+        <li> Taux de mortalité : {{ indicateurs.taux_mortalite }}</li>
+        <li> Taux de vente : {{ indicateurs.taux_vente }}</li>
+        <li> Taux d'occupation des cages : {{ indicateurs.occupation }}</li>
+        <li> Age moyen des lapins : {{ indicateurs.age_moyen }}</li>
+    </ul>
+
+    
      
 {% else %}
     <div class="alert alert-danger">

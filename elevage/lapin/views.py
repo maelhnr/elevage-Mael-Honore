@@ -54,12 +54,13 @@ def nouveau(request):
             
             Tour.objects.create(
             elevage = elevage,
-            numero =  1,
+            numero =  0,
             nb_femelles_adultes = nb_femelles_adultes,
             nb_males_adultes = nb_males_adultes,
             nb_lapereaux = nb_lapereaux
-        )  
-              
+            )  
+            elevage.tour = 0
+            elevage.save()  
             return redirect('detail_elevage', elevage_id=elevage.id)
     else:
         form = ElevageForm()
@@ -122,6 +123,9 @@ def elevage(request, elevage_id):
     ## graphe initial 
     
     
+    vendus_m = 0
+    vendus_f = 0
+   
     if elevage.fin_du_jeu:
         form = None
 
@@ -131,66 +135,153 @@ def elevage(request, elevage_id):
         vendus_f = form.cleaned_data['lapins_femelles_vendus'] or 0
         nourriture_achetee = form.cleaned_data['nourriture_achetee'] or 0
         cages_achetees = form.cleaned_data['cages_achetees'] or 0
+        action = request.POST.get('action')
+        if action == "prevision":
+            prevision_3_tours = elevage.prevision_avec_actions(nourriture_achetee,cages_achetees,vendus_m,vendus_f)
+            parametres = elevage.parametres_elevage()
+            prevision = elevage.simulation_sans_action()
+            proposition = elevage.propositions_optimisees()
+            indicateurs = elevage.indicateurs_cles()
+            context = {
+                'elevage': elevage,
+                'individus': individus,
+                'form': form,
+                'resultats_tour': resultats_tour,
+                'fin_du_jeu': elevage.fin_du_jeu,
+                'lapins_vendus_m': vendus_m,
+                'lapins_vendus_f': vendus_f,
+                'parametres': parametres,
+                'prevision': prevision,
+                'prevision_3_tours': prevision_3_tours,
+                'proposition': proposition,
+                'indicateurs': indicateurs,
+                'data': serialized_data,
+            }
+            return render(request, 'elevage/elevage.html', context)
+        elif action == "valider":
+            # Vérification des actions et application du tour
+            regle = Regle.objects.first()
+            revenu_vente = (vendus_m + vendus_f) * regle.prix_vente_lapin
+            cout_total = nourriture_achetee * regle.prix_nourriture + cages_achetees * regle.prix_cage
+            argent_apres_vente = elevage.argent + revenu_vente
 
-        # Comptage des lapins actuels
-        nb_males = individus.filter(sexe='M').count()
-        nb_femelles = individus.filter(sexe='F').count()
+            if vendus_m > individus.filter(sexe='M').count() or vendus_f > individus.filter(sexe='F').count():
+                form.add_error(None, "Vous ne pouvez pas vendre plus de lapins que vous n'en avez.")
+            elif cout_total > argent_apres_vente:
+                form.add_error(None, "Fonds insuffisants pour cet achat.")
+            else:
+                # Marquer les lapins comme vendus
+                lapins_males = individus.filter(sexe='M')[:vendus_m]
+                for lapin in lapins_males:
+                    lapin.etat = 'VENDU'
+                    lapin.save()
+                    
+                lapins_femelles = individus.filter(sexe='F')[:vendus_f]
+                for lapin in lapins_femelles:
+                    lapin.etat = 'VENDU'
+                    lapin.save()
 
-        # Vérification des ordres
-        regle, created = Regle.objects.get_or_create(defaults={
-            'prix_nourriture': 0.05,
-            'prix_cage': 12.00,
-            'prix_vente_lapin': 15.00,
-            'conso_2_mois': 200.0,
-            'conso_3_mois_et_plus': 300.0,
-            'age_min_gravide': 4,
-            'age_max_gravide': 24,
-            'duree_gestation': 1,
-            'nb_max_par_portee': 8,
-            'nb_max_individus_par_cage': 5,
-            'seuil_surpopulation': 7
-        })
-        regle = Regle.objects.first()  # On suppose toujours qu’il n’y en a qu’une
-        revenu_vente = (vendus_m + vendus_f) * regle.prix_vente_lapin
-        cout_total = nourriture_achetee * regle.prix_nourriture + cages_achetees * regle.prix_cage
-        argent_apres_vente = elevage.argent + revenu_vente
-
-        if vendus_m > nb_males or vendus_f > nb_femelles:
-            form.add_error(None, "Vous ne pouvez pas vendre plus de lapins que vous n'en avez.")
-        elif cout_total > argent_apres_vente:
-            form.add_error(None, "Fonds insuffisants pour cet achat.")
-        else:
-            # Marquer les lapins comme vendus 
-            lapins_males = individus.filter(sexe='M')[:vendus_m]
-            for lapin in lapins_males:
-                lapin.etat = 'VENDU'
-                lapin.save()
-
-            lapins_femelles = individus.filter(sexe='F')[:vendus_f]
-            for lapin in lapins_femelles:
-                lapin.etat = 'VENDU'
-                lapin.save()
-
-            # Appliquer les achats
-            resultats_tour = elevage.jouer_tour(nourriture_achetee, cages_achetees, vendus_m, vendus_f)
-            form = Actions()  # Reset form après un tour
+                # Appliquer les achats
+                resultats_tour = elevage.jouer_tour(nourriture_achetee, cages_achetees, vendus_m, vendus_f)
+                form = Actions()  # Reset form après un tour
             
-        #graphe
-         
-        nb_femelles_adultes = individus.filter(sexe='F', age__gte = 3).count()
-        nb_males_adultes = individus.filter(sexe='M', age__gte = 3).count()
-        nb_lapereaux = individus.filter(age__in = [0,2]).count()
-        
-        #dernier_tour = Tour.objects.filter(elevage = elevage).order_by('-numero').first()
-        #nouveau_numero = dernier_tour.numero + 1 if dernier_tour else 1
+            
+            #graphe
+            nb_femelles_adultes = individus.filter(sexe='F', age__gte = 3).count()
+            nb_males_adultes = individus.filter(sexe='M', age__gte = 3).count()
+            nb_lapereaux = individus.filter(age__in = [0,2]).count()
+            
+            #dernier_tour = Tour.objects.filter(elevage = elevage).order_by('-numero').first()
+            #nouveau_numero = dernier_tour.numero + 1 if dernier_tour else 1
 
-        Tour.objects.create(
-            elevage = elevage,
-            numero = numero + 1,
-            nb_femelles_adultes = nb_femelles_adultes,
-            nb_males_adultes = nb_males_adultes,
-            nb_lapereaux = nb_lapereaux
-        )
+            Tour.objects.create(
+                elevage = elevage,
+                numero = numero + 1,
+                nb_femelles_adultes = nb_femelles_adultes,
+                nb_males_adultes = nb_males_adultes,
+                nb_lapereaux = nb_lapereaux
+            )
+            
+            # Mettre à jour les données du graphe après création du nouveau Tour
+            data = Tour.objects.filter(elevage=elevage).order_by('numero')
+            data_exists = data.exists()
+            serialized_data = serializers.serialize("json", data) if data_exists else "[]"
+
+            
+            parametres = elevage.parametres_elevage()
+            prevision = elevage.simulation_sans_action()
+            proposition = elevage.propositions_optimisees()
+            indicateurs = elevage.indicateurs_cles()
+            
+            context = {
+                'elevage': elevage,
+                'individus': individus,
+                'form': form if not elevage.fin_du_jeu else None,
+                'resultats_tour': resultats_tour if form_is_valid else None,
+                'fin_du_jeu': elevage.fin_du_jeu,
+                'lapins_vendus_m': vendus_m if form_is_valid else 0,
+                'lapins_vendus_f': vendus_f if form_is_valid else 0,
+                'parametres': parametres,
+                'prevision': prevision,
+                'prevision_3_tours': None,
+                'proposition': proposition,
+                'indicateurs': indicateurs,
+                'data': serialized_data,
+
+            }
+            return render(request, 'elevage/elevage.html', context)
+
+        else :
+        
+            parametres = elevage.parametres_elevage()
+            prevision = elevage.simulation_sans_action()
+            proposition = elevage.propositions_optimisees()
+            indicateurs = elevage.indicateurs_cles()
+            
+            context = {
+                'elevage': elevage,
+                'individus': individus,
+                'form': form if not elevage.fin_du_jeu else None,
+                'resultats_tour': resultats_tour if form_is_valid else None,
+                'fin_du_jeu': elevage.fin_du_jeu,
+                'lapins_vendus_m': vendus_m if form_is_valid else 0,
+                'lapins_vendus_f': vendus_f if form_is_valid else 0,
+                'parametres': parametres,
+                'prevision': prevision,
+                'prevision_3_tours': None,
+                'proposition': proposition,
+                'indicateurs': indicateurs,
+                'data': serialized_data,
+            }
+            return render(request, 'elevage/elevage.html', context)
+        
+    else :
+        
+        parametres = elevage.parametres_elevage()
+        prevision = elevage.simulation_sans_action()
+        proposition = elevage.propositions_optimisees()
+        indicateurs = elevage.indicateurs_cles()
+        
+        context = {
+            'elevage': elevage,
+            'individus': individus,
+            'form': form if not elevage.fin_du_jeu else None,
+            'resultats_tour': resultats_tour if form_is_valid else None,
+            'fin_du_jeu': elevage.fin_du_jeu,
+            'lapins_vendus_m': vendus_m if form_is_valid else 0,
+            'lapins_vendus_f': vendus_f if form_is_valid else 0,
+            'parametres': parametres,
+            'prevision': prevision,
+            'prevision_3_tours': None,
+            'proposition': proposition,
+            'indicateurs': indicateurs,
+            'data': serialized_data,
+        }
+        return render(request, 'elevage/elevage.html', context)
+
+        
+            
+        
     context = {
         'elevage': elevage,
         'individus': individus,
@@ -199,7 +290,8 @@ def elevage(request, elevage_id):
         'fin_du_jeu': elevage.fin_du_jeu,
         'lapins_vendus_m': vendus_m if form_is_valid else 0,
         'lapins_vendus_f': vendus_f if form_is_valid else 0,
-        'data': serialized_data if data_exists else {},
+        'data': serialized_data,
+
     }
     return render(request, 'elevage/elevage.html', context)
 

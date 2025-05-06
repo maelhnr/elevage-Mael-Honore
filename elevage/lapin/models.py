@@ -1,5 +1,7 @@
+from copy import deepcopy
 from django.db import models
 from random import randint, choice
+from datetime import timedelta
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -153,7 +155,249 @@ class Elevage(models.Model):
             'morts_maladie': morts_maladie,
             'naissances': naissances
         }
+
+    def parametres_elevage(self):
+        regle = Regle.objects.first()
+        individus = self.individus.filter(etat__in=['P', 'G'])
+        
+        concentration = len(individus)/self.nombre_cages
+        
+        consommation : float = 0.0
+        for individu in individus:
+            age = individu.age + 1
+            if age == 1 :
+                consommation = consommation + 0.0
+            elif age == 2 :
+                consommation = consommation + float(regle.conso_2_mois)
+            else :
+                consommation = consommation + float(regle.conso_3_mois_et_plus)
+        return {
+            'consommation': consommation,
+            'concentration': concentration,
+            
+        }
+
     
+    def simulation_sans_action(self):   
+        regle = Regle.objects.first()
+        quantite_nourriture = float(self.quantite_nourriture)
+        nombre_cages = self.nombre_cages
+        individus = self.individus.filter(etat__in=['P', 'G'])
+        
+        morts_faim = 0
+        morts_maladie = 0
+        naissances = 0
+        
+        #Nourriture
+        for individu in individus:
+            age = individu.age + 1
+            if age == 1:
+                conso = 0.0
+            elif age == 2:
+                conso = float(regle.conso_2_mois)
+            else :
+                conso = float(regle.conso_3_mois_et_plus)
+            
+            if quantite_nourriture >= conso:
+                quantite_nourriture = quantite_nourriture - float(conso)
+            else:
+                morts_faim += 1
+        
+        # Surpopulation
+        vivants = individus.filter(etat__in=['P', 'G'],age__gte=3)
+        if len(vivants) > nombre_cages * regle.seuil_surpopulation:
+            morts_maladie = int( len(vivants)*0.3 )
+        
+        # Accouchement des femelles gravides
+        femelles_gravides = individus.filter(etat__in=['G'])
+        for femelle in femelles_gravides:
+            nb_petits = int((1 + regle.nb_max_par_portee)/2)
+            naissances = naissances + nb_petits
+        naissances = int(naissances)
+        
+        return {
+        'morts_faim': morts_faim,
+        'morts_maladie': morts_maladie,
+        'naissances': naissances,
+        'total_vivants_apres': len(individus) - morts_faim - morts_maladie + naissances,
+        'nourriture_restante': quantite_nourriture
+    }
+
+    def prevision_avec_actions(self, nourriture_achetee, cages_achetees, vendus_m, vendus_f, nb_tours=3):
+        regle = Regle.objects.first()
+
+        nourriture = float(self.quantite_nourriture)
+        cages = self.nombre_cages
+        argent = float(self.argent)
+
+        individus = [deepcopy(ind) for ind in self.individus.filter(etat__in=['P', 'G'])]
+
+        previsions = []
+
+        for tour in range(nb_tours):
+            # Met à jour la liste des vivants
+            vivants = [ind for ind in individus if ind.etat in ['P', 'G']]
+            morts_faim = 0
+            morts_maladie = []
+            naissances = 0
+            nouvelles_gestations = 0
+
+            males_disponibles = [i for i in vivants if i.sexe == 'M']
+            femelles_disponibles = [i for i in vivants if i.sexe == 'F']
+            nb_vendus_m = min(vendus_m, len(males_disponibles))
+            nb_vendus_f = min(vendus_f, len(femelles_disponibles))
+
+            for i in range(nb_vendus_m):
+                males_disponibles[i].etat = 'V'
+            for i in range(nb_vendus_f):
+                femelles_disponibles[i].etat = 'V'
+
+            revenu = (nb_vendus_m + nb_vendus_f) * float(regle.prix_vente_lapin)
+            argent += revenu
+
+            nourriture += nourriture_achetee
+            cages += cages_achetees
+            argent -= nourriture_achetee * float(regle.prix_nourriture) + cages_achetees * float(regle.prix_cage)
+
+            for ind in vivants:
+                ind.age += 1
+
+            for ind in vivants:
+                if ind.age == 1:
+                    conso = 0.0
+                elif ind.age == 2:
+                    conso = float(regle.conso_2_mois)
+                else:
+                    conso = float(regle.conso_3_mois_et_plus)
+
+                if nourriture >= conso:
+                    nourriture -= conso
+                else:
+                    ind.etat = 'M'
+                    morts_faim += 1
+                    
+            vivants_adulte = [ind for ind in individus if ind.etat in ['P', 'G'] and ind.age>=3]
+            if len(vivants) > cages * regle.seuil_surpopulation:
+                nb_surplus = int(len(vivants) * 0.30)
+                for ind in vivants[:nb_surplus]:
+                    ind.etat = 'M'
+                    morts_maladie.append(ind)
+
+            for femelle in [ind for ind in individus if ind.etat == 'G']:
+                nb_petits = int((regle.nb_max_par_portee + 1) / 2)
+                for _ in range(nb_petits):
+                    sexe = choice(['M', 'F'])
+                    bebe = deepcopy(femelle)
+                    bebe.sexe = sexe
+                    bebe.age = 0
+                    bebe.etat = 'P'
+                    individus.append(bebe)
+                    naissances += 1
+                femelle.etat = 'P'
+
+            femelles_reproductrices = [
+                ind for ind in individus
+                if ind.sexe == 'F' and ind.etat == 'P' and regle.age_min_gravide <= ind.age <= regle.age_max_gravide
+            ]
+            nb_males_adultes = sum(1 for ind in individus if ind.sexe == 'M' and ind.etat == 'P' and ind.age >= 3)
+
+            if nb_males_adultes > 0:
+                for femelle in femelles_reproductrices:
+                    if randint(1, 100) <= 70:
+                        femelle.etat = 'G'
+                        nouvelles_gestations += 1
+            vivants_final = [ind for ind in individus if ind.etat in ['P', 'G']]
+            concentration = len(vivants_final) / max(1, cages)
+
+            previsions.append({
+                'tour': tour + 1,
+                'vivants_apres': len(vivants_final),
+                'morts_faim': morts_faim,
+                'morts_maladie': len(morts_maladie),
+                'naissances': naissances,
+                'nouvelles_gestations': nouvelles_gestations,
+                'nourriture_restante': round(nourriture, 2),
+                'argent_apres': round(argent, 2),
+                'concentration_apres': round(concentration, 2),
+            })
+        return previsions
+    
+    def propositions_optimisees(self):
+        regle = Regle.objects.first()
+        nourriture = float(self.quantite_nourriture)
+        cages = self.nombre_cages
+        argent = float(self.argent)
+        individus = [deepcopy(ind) for ind in self.individus.filter(etat__in=['P', 'G'])]    
+        
+        #Nourriture
+        achat_nourriture = 0
+        consommation : float = 0.0
+        for individu in individus:
+            age = individu.age + 1
+            if age == 1 :
+                consommation = consommation + 0.0
+            elif age == 2 :
+                consommation = consommation + float(regle.conso_2_mois)
+            else :
+                consommation = consommation + float(regle.conso_3_mois_et_plus)
+        if consommation > nourriture :
+            achat_nourriture = consommation - nourriture
+        
+        #Cages
+        achat_cages = 0
+        concentration = len(individus)/self.nombre_cages
+        if concentration > regle.seuil_surpopulation :
+            achat_cages = int(len(individus)/regle.seuil_surpopulation) + 1 - self.nombre_cages
+       
+       #Ventes de lapins surpopulation
+        vente_lapins = 0
+        if concentration > regle.seuil_surpopulation :
+            vente_lapins = len(individus) - regle.seuil_surpopulation * self.nombre_cages
+        
+        return {
+        'achat_nourriture': achat_nourriture,
+        'achat_cages': achat_cages,
+        'vente_lapins': vente_lapins,
+        }
+        
+    def indicateurs_cles(self):
+        regle = Regle.objects.first()
+
+        present = [deepcopy(ind) for ind in self.individus.filter(etat__in=['P'])]
+        gravide = [deepcopy(ind) for ind in self.individus.filter(etat__in=['G'])]
+        mort = [deepcopy(ind) for ind in self.individus.filter(etat__in=['M'])]
+        vendu = [deepcopy(ind) for ind in self.individus.filter(etat__in=['V'])]
+        
+        #taille de l'elevage
+        taille = len(present) + len(gravide)
+        #taux de mortalite
+        taux_mortalite = len(mort) / (len(present) + len(gravide) + len(mort) + len(vendu))    
+        #taux de vente
+        taux_vente = len(vendu) / (len(present) + len(gravide) + len(mort) + len(vendu))    
+        #taux de natalite
+        #Moyenne age
+        age_moyen = 0
+        if (len(present) + len(gravide)) > 0:
+            age_moyen = sum([ind.age for ind in present] + [ind.age for ind in gravide]) / (len(present) + len(gravide))
+        else:
+            age_moyen = 0
+        #Occupation cages
+        occupation = 0
+        nb_cages = self.nombre_cages
+        capacite = nb_cages * regle.seuil_surpopulation
+        if nb_cages > 0 :
+            occupation = taille / capacite
+        else :
+            occupation = 0
+        return {
+        'taille': taille,
+        'taux_mortalite': taux_mortalite,
+        'taux_vente': taux_vente,
+        'age_moyen':age_moyen,
+        'occupation': occupation,        
+        }
+
+        
 class Individu(models.Model):
     class Sexe(models.TextChoices):
         MALE = 'M', 'Mâle'
@@ -231,24 +475,24 @@ class Sante(models.Model):
     # S'il a déja été malade le mois dernier, il devra mourir
     vivant = models.BooleanField(default=True)
     
-    def is_guerir(self):
+    def guerir(self):
         self.niveau_sante = 100
         self.malade = False
         self.save()  
         
-    def is_malade(self):
+    def rendre_malade(self):
         self.niveau_sante = 0
         self.malade = True
         self.save()  
         
-    def is_falling(self):
+    def rendre_aggrave(self):
         if self.niveau_sante >= 20 :
             self.niveau_sante -= 20
         else :
             self.niveau_sante = 0
         self.save()  
     
-    def is_recovering(self):
+    def soigner(self):
         if self.niveau_sante <= 80 :
             self.niveau_sante += 20
         else :
@@ -297,18 +541,18 @@ class Sante(models.Model):
             
         # Tomber malade selon son niveau de santé
         if randint(1, 100) >= int(self.niveau_sante): 
-            self.is_malade()
+            self.rendre_malade()
 
         # Application des probabilités
         if randint(1, 100) <= int(chance_guerison):  # Probabilité de guérison
-            self.is_recovering()
+            self.soigner()
             if randint(1, 100) <= int(prob_guerison * 100):  # Guérison basée sur la difficulté
-                self.is_guerir()
+                self.guerir()
 
         if randint(1, 100) <= int(risque_maladie * 100):  # Probabilité de maladie
-            self.is_falling()
+            self.rendre_aggrave()
             if randint(1, 100) <= int(prob_maladie * 100):  # Maladie basée sur la difficulté
-                self.is_malade()
+                self.rendre_malade()
 
 
         
