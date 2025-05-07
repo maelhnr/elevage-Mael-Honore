@@ -57,7 +57,9 @@ def nouveau(request):
             numero =  0,
             nb_femelles_adultes = nb_femelles_adultes,
             nb_males_adultes = nb_males_adultes,
-            nb_lapereaux = nb_lapereaux
+            nb_lapereaux = nb_lapereaux,
+            nb_naissances = 0,
+            nb_mortalites = 0
             )  
             elevage.tour = 0
             elevage.save()  
@@ -219,14 +221,24 @@ def elevage(request, elevage_id):
                 numero = numero + 1,
                 nb_femelles_adultes = nb_femelles_adultes,
                 nb_males_adultes = nb_males_adultes,
-                nb_lapereaux = nb_lapereaux
+                nb_lapereaux = nb_lapereaux,
+                nb_naissances = resultats_tour['naissances'],
+                nb_mortalites = resultats_tour['mortalites']
             )
+
             
             # Mettre à jour les données du graphe après création du nouveau Tour
             data = Tour.objects.filter(elevage=elevage).order_by('numero')
             data_exists = data.exists()
             serialized_data = serializers.serialize("json", data) if data_exists else "[]"
-
+            data_json = [
+                {
+                    'numero': tour.numero,
+                    'naissances': tour.nb_naissances,
+                    'mortalites': tour.nb_mortalites,
+                }
+            for tour in data
+            ]
             
             parametres = elevage.parametres_elevage()
             prevision = elevage.simulation_sans_action()
@@ -248,6 +260,7 @@ def elevage(request, elevage_id):
                 'indicateurs': indicateurs,
                 'data': serialized_data,
                 'form_bonus': form_bonus,
+                'courbes': json.dumps(data_json),
 
             }
             return render(request, 'elevage/elevage.html', context)

@@ -80,68 +80,116 @@
         <!-- Lien vers la page de gestion des soins des lapins -->
         <a href="{% url 'gestion_lapins' elevage.id %}" class="btn btn-info mt-3">Soigner les lapins</a>
     </form>
-
-    <button onclick="toggleGraph()">Evolution de la population</button>
-
-    <div id="chart-container" style="display: none;">
-        <canvas id="myChart"></canvas>
-    </div>
-      
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <script>
-        function toggleGraph() {
-            const container = document.getElementById('chart-container');
-            container.style.display = container.style.display === 'none' ? 'block' : 'none';
+
+    <!-- Bouton pour le premier graphe -->
+<button onclick="toggleGraphDemographie()">Afficher évolution démographique</button>
+
+<div id="chart-container-demographie" style="display: none;">
+    <canvas id="courbeNaissancesMortalites" width="600" height="300"></canvas>
+</div>
+
+<!-- Bouton pour le deuxième graphe -->
+<button onclick="toggleGraphPopulation()">Afficher évolution de la population</button>
+
+<div id="chart-container-population" style="display: none;">
+    <canvas id="myChart"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    function toggleGraphDemographie() {
+        const container = document.getElementById('chart-container-demographie');
+        container.style.display = container.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function toggleGraphPopulation() {
+        const container = document.getElementById('chart-container-population');
+        container.style.display = container.style.display === 'none' ? 'block' : 'none';
+    }
+
+    // Graphique démographie
+    const dataDemo = JSON.parse('{{ courbes|safe }}');
+    const labelsDemo = dataDemo.map(d => `Tour ${d.numero}`);
+    const naissances = dataDemo.map(d => d.naissances);
+    const mortalites = dataDemo.map(d => d.mortalites);
+    const ctxDemo = document.getElementById('courbeNaissancesMortalites').getContext('2d');
+
+    new Chart(ctxDemo, {
+        type: 'line',
+        data: {
+            labels: labelsDemo,
+            datasets: [
+                {
+                    label: 'Naissances',
+                    data: naissances,
+                    borderColor: 'green',
+                    fill: false
+                },
+                {
+                    label: 'Mortalités',
+                    data: mortalites,
+                    borderColor: 'red',
+                    fill: false
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true }
+            }
         }
-    </script>
+    });
 
-    <script>
-        var data = {{ data | safe }}
-        const ctx = document.getElementById('myChart');
+    // Graphique population
+    const dataPop = {{ data | safe }};
+    const ctxPop = document.getElementById('myChart').getContext('2d');
 
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: data.map(i=> 'Tour ' + i.fields.numero),
-                datasets: [{
+    new Chart(ctxPop, {
+        type: 'bar',
+        data: {
+            labels: dataPop.map(i => 'Tour ' + i.fields.numero),
+            datasets: [
+                {
                     label: 'Femelles',
-                    data: data.map(i=>i.fields.nb_femelles_adultes),
+                    data: dataPop.map(i => i.fields.nb_femelles_adultes),
                     borderColor: 'rgb(99, 255, 154)',
                     backgroundColor: 'rgba(99, 255, 146, 0.2)',
                 },
                 {
                     label: 'Mâles',
-                    data: data.map(i=>i.fields.nb_males_adultes),
+                    data: dataPop.map(i => i.fields.nb_males_adultes),
                     borderColor: 'rgba(54, 162, 235, 1)',
                     backgroundColor: 'rgba(54, 162, 235, 0.2)',
                 },
                 {
                     label: 'Lapereaux',
-                    data: data.map(i=>i.fields.nb_lapereaux),
+                    data: dataPop.map(i => i.fields.nb_lapereaux),
                     borderColor: 'rgba(255, 206, 86, 1)',
                     backgroundColor: 'rgba(255, 206, 86, 0.2)',
-                }]
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { precision: 0 }
+                }
             },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            precision: 0 // évite les décimales
-                        }
-                    }
-                },
-                plugins: {
-                    title: {
-                        display: true,
-                        text: 'Population par catégorie'
-                    }
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Population par catégorie'
                 }
             }
-        });
-    </script>
+        }
+    });
+</script>
+
       
 
      <!-- Lien vers la page de gestion des soins des lapins -->
