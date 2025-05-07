@@ -53,6 +53,7 @@ class Elevage(models.Model):
         morts_faim = []
         morts_maladie = []
         naissances = []
+        mortalites = []
         
         # Vieillissement des individus
         for individu in individus:
@@ -149,11 +150,13 @@ class Elevage(models.Model):
             self.fin_du_jeu = True
             self.save()
 
+        nb_mortalites = len(morts_faim) + len(morts_maladie)
 
         return {
             'morts_faim': morts_faim,
             'morts_maladie': morts_maladie,
-            'naissances': naissances
+            'naissances': len(naissances),
+            'mortalites': nb_mortalites,
         }
 
     def parametres_elevage(self):
@@ -566,6 +569,8 @@ class Tour(models.Model):
     nb_femelles_adultes = models.PositiveIntegerField(default=0)
     nb_males_adultes = models.PositiveIntegerField(default=0)
     nb_lapereaux = models.PositiveIntegerField(default=0)
+    nb_naissances = models.IntegerField(default=0)   
+    nb_mortalites = models.IntegerField(default=0)
     class Meta:
         unique_together = ('numero', 'elevage')
     def __str__(self):
